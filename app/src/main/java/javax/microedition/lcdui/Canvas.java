@@ -765,6 +765,7 @@ public abstract class Canvas extends Displayable {
 			if (program.uPixelDelta >= 0) {
 				glUniform2f(program.uPixelDelta, 1.0f / width, 1.0f / height);
 			}
+			program.setOutputSize(width, height);
 		}
 
 		@Override

@@ -40,6 +40,10 @@ public class ShaderProgram {
 	public int uTexelDelta;
 	public int uSetting;
 	public int uPixelDelta;
+	public int uMvp;
+	public int uTextureSize;
+	public int uInputSize;
+	public int uOutputSize;
 
 	public ShaderProgram(ShaderInfo shader) {
 		if (shader != null) {
@@ -50,6 +54,8 @@ public class ShaderProgram {
 				String vertexCode = vertex != null ? FileUtils.getText(shader.dir + vertex)
 						: ContextHolder.getAssetAsString(VERTEX);
 				String fragmentCode = FileUtils.getText(shader.dir + fragment);
+				vertexCode = prepare(vertexCode, "VERTEX");
+				fragmentCode = prepare(fragmentCode, "FRAGMENT");
 				if (createProgram(vertexCode, fragmentCode) != -1) {
 					glReleaseShaderCompiler();
 					return;
@@ -63,6 +69,41 @@ public class ShaderProgram {
 		glReleaseShaderCompiler();
 		if (program == -1) {
 			throw new RuntimeException("Init shader program error: see log for detail");
+		}
+	}
+
+	/**
+	 * Adapts desktop/RetroArch style GLSL to GLSL ES 1.00 (GLES 2.0):
+	 * removes #version lines and adds the VERTEX/FRAGMENT stage define
+	 * used by single-file RetroArch shaders ("#if defined(VERTEX)").
+	 */
+	private static String prepare(String code, String stage) {
+		if (code == null) {
+			return "";
+		}
+		code = code.replaceAll("(?m)^\\s*#version.*$", "");
+		return "#define " + stage + "\n" + code;
+	}
+
+	private static int attrib(int program, String... names) {
+		for (String n : names) {
+			int l = glGetAttribLocation(program, n);
+			if (l >= 0) return l;
+		}
+		return -1;
+	}
+
+	private static int uniform(int program, String... names) {
+		for (String n : names) {
+			int l = glGetUniformLocation(program, n);
+			if (l >= 0) return l;
+		}
+		return -1;
+	}
+
+	public void setOutputSize(float width, float height) {
+		if (uOutputSize >= 0) {
+			glUniform2f(uOutputSize, width, height);
 		}
 	}
 
@@ -86,13 +127,20 @@ public class ShaderProgram {
 			String errorString = GLU.gluErrorString(error);
 			Log.e(TAG, "init program: glError " + errorString);
 		}
-		aPosition = glGetAttribLocation(program, "a_position");
-		aTexCoord = glGetAttribLocation(program, "a_texcoord0");
-		uTextureUnit = glGetUniformLocation(program, "sampler0");
+		aPosition = attrib(program, "a_position", "VertexCoord");
+		aTexCoord = attrib(program, "a_texcoord0", "TexCoord");
+		uTextureUnit = uniform(program, "sampler0", "Texture");
 		uTexelDelta = glGetUniformLocation(program, "u_texelDelta");
 		uPixelDelta = glGetUniformLocation(program, "u_pixelDelta");
 		uSetting = glGetUniformLocation(program, "u_setting");
+		uMvp = glGetUniformLocation(program, "MVPMatrix");
+		uTextureSize = glGetUniformLocation(program, "TextureSize");
+		uInputSize = glGetUniformLocation(program, "InputSize");
+		uOutputSize = glGetUniformLocation(program, "OutputSize");
 		glUseProgram(program);
+		if (uMvp >= 0) {
+			glUniformMatrix4fv(uMvp, 1, false, new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}, 0);
+		}
 		int error1 = glGetError();
 		if (error1 != GL_NO_ERROR) {
 			String s1 = GLU.gluErrorString(error1);
@@ -129,15 +177,25 @@ public class ShaderProgram {
 
 	public void loadVbo(FloatBuffer vbo, float width, float height) {
 		vbo.rewind();
-		glVertexAttribPointer(aPosition, 2, GL_FLOAT, false, 4 * 4, vbo);
-		glEnableVertexAttribArray(aPosition);
+		if (aPosition >= 0) {
+			glVertexAttribPointer(aPosition, 2, GL_FLOAT, false, 4 * 4, vbo);
+			glEnableVertexAttribArray(aPosition);
+		}
 
 		// координаты текстур
 		vbo.position(2);
-		glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, false, 4 * 4, vbo);
-		glEnableVertexAttribArray(aTexCoord);
+		if (aTexCoord >= 0) {
+			glVertexAttribPointer(aTexCoord, 2, GL_FLOAT, false, 4 * 4, vbo);
+			glEnableVertexAttribArray(aTexCoord);
+		}
 		if (uTexelDelta >= 0) {
 			glUniform2f(uTexelDelta, 1.0f / width, 1.0f / height);
+		}
+		if (uTextureSize >= 0) {
+			glUniform2f(uTextureSize, width, height);
+		}
+		if (uInputSize >= 0) {
+			glUniform2f(uInputSize, width, height);
 		}
 	}
 }

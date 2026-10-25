@@ -17,15 +17,20 @@
 
 package ru.playsoftware.j2meloader;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Build;
+import android.os.Bundle;
 import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.multidex.MultiDex;
 import androidx.preference.PreferenceManager;
 
@@ -65,6 +70,57 @@ public class EmulatorApplication extends Application implements OnSharedPreferen
 		sp.registerOnSharedPreferenceChangeListener(this);
 		setNightMode(sp.getString(Constants.PREF_THEME, null));
 		AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+		registerActivityLifecycleCallbacks(new HideSystemBarsCallbacks());
+	}
+
+	/** Esconde barra de status e botoes de navegacao em todas as telas, menos no jogo. */
+	private static void hideSystemBars(Activity activity) {
+		if (activity instanceof javax.microedition.shell.MicroActivity) {
+			return;
+		}
+		android.view.Window w = activity.getWindow();
+		WindowInsetsControllerCompat c = WindowCompat.getInsetsController(w, w.getDecorView());
+		c.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+		c.hide(WindowInsetsCompat.Type.systemBars());
+	}
+
+	private static class HideSystemBarsCallbacks implements ActivityLifecycleCallbacks {
+		@Override
+		public void onActivityCreated(@NonNull Activity a, Bundle savedInstanceState) {
+			hideSystemBars(a);
+			// as barras voltam depois de dialogos/teclado: esconde de novo quando a tela ganha foco
+			a.getWindow().getDecorView().getViewTreeObserver()
+					.addOnWindowFocusChangeListener(hasFocus -> {
+						if (hasFocus) {
+							hideSystemBars(a);
+						}
+					});
+		}
+
+		@Override
+		public void onActivityResumed(@NonNull Activity a) {
+			hideSystemBars(a);
+		}
+
+		@Override
+		public void onActivityStarted(@NonNull Activity a) {
+		}
+
+		@Override
+		public void onActivityPaused(@NonNull Activity a) {
+		}
+
+		@Override
+		public void onActivityStopped(@NonNull Activity a) {
+		}
+
+		@Override
+		public void onActivitySaveInstanceState(@NonNull Activity a, @NonNull Bundle outState) {
+		}
+
+		@Override
+		public void onActivityDestroyed(@NonNull Activity a) {
+		}
 	}
 
 	@NonNull

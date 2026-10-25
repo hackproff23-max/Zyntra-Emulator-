@@ -14,6 +14,9 @@
         <item name="textColorPrimary">@color/text_primary</item>
         <item name="textColorSecondary">@color/text_secondary</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <item name="android:textViewStyle">@style/TextViewBold</item>
+        <item name="android:editTextStyle">@style/EditTextBold</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="p">shortEdges</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -22,6 +25,7 @@
     </style>
 
     <style name="FilePickerTheme" parent="Theme.AppCompat.DayNight.DialogWhenLarge">
+        <item name="android:textViewStyle">@style/TextViewBold</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/file_picker_accent</item>
@@ -65,6 +69,7 @@
     </style>
 
     <style name="ButtonStyle" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:textStyle">bold</item>
         <item name="elevation">1dp</item>
         <item name="android:background">@drawable/bg_button</item>
     </style>
@@ -75,5 +80,14 @@
     </style>
 
     <style name="TextViewVendor" parent="Widget.AppCompat.TextView" />
+
+    <!-- Fonte bold padrao em todo o emulador -->
+    <style name="TextViewBold" parent="Widget.AppCompat.TextView">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="EditTextBold" parent="Widget.AppCompat.EditText">
+        <item name="android:textStyle">bold</item>
+    </style>
 
 </resources>

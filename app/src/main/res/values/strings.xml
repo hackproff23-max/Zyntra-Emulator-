@@ -285,4 +285,7 @@
     <string name="menu_import_png">Import PNG buttons</string>
     <string name="shaders_imported">%1$d file(s) imported to the shaders folder</string>
     <string name="shaders_import_error">Could not import the shader files</string>
+    <string name="shaders_pick_folder">Select a folder (recommended)</string>
+    <string name="shaders_pick_files">Select files</string>
+    <string name="shaders_imported_found">%1$d file(s) copied, %2$d shader(s) found</string>
 </resources>

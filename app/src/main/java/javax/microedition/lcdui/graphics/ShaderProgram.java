@@ -45,8 +45,10 @@ public class ShaderProgram {
 		if (shader != null) {
 			String vertex = shader.vertex;
 			String fragment = shader.fragment;
-			if (vertex != null && fragment != null) {
-				String vertexCode = FileUtils.getText(shader.dir + vertex);
+			if (fragment != null) {
+				// sem vertex proprio (shader so de fragment): usa o vertex padrao do emulador
+				String vertexCode = vertex != null ? FileUtils.getText(shader.dir + vertex)
+						: ContextHolder.getAssetAsString(VERTEX);
 				String fragmentCode = FileUtils.getText(shader.dir + fragment);
 				if (createProgram(vertexCode, fragmentCode) != -1) {
 					glReleaseShaderCompiler();

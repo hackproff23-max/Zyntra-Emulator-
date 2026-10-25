@@ -435,44 +435,42 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 		ArrayAdapter<ShaderInfo> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, shaders);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		binding.spShader.setAdapter(adapter);
-		String[] files = dir.list();
-		if (files != null) {
-			for (String fileName : files) {
-				if (!TextUtils.endsWithIgnoreCase(fileName, ".ini")) {
-					continue;
-				}
-				File file = new File(dir, fileName);
-				String text;
-				try {
-					//noinspection CharsetObjectCanBeUsed
-					text = FilesKt.readText(file, Charset.forName("UTF-8"));
-				} catch (Exception e) {
-					Log.e(TAG, "getText: " + file, e);
-					continue;
-				}
-
-				String[] split = text.split("[\\n\\r]+");
-				ShaderInfo info = null;
-				for (String line : split) {
-					if (line.startsWith("[")) {
-						if (info != null && info.fragment != null && info.vertex != null) {
-							shaders.add(info);
-						}
-						info = new ShaderInfo(line.replaceAll("[\\[\\]]", ""), "unknown");
-					} else if (info != null) {
-						try {
-							info.set(line);
-						} catch (Exception e) {
-							Log.e(TAG, "initShaderSpinner: ", e);
-						}
+		ShaderScanner.Result found = ShaderScanner.scan(dir);
+		// 1) formato nativo .ini (pode estar em subpastas; caminhos relativos a propria pasta do .ini)
+		for (File file : found.iniFiles) {
+			String text;
+			try {
+				//noinspection CharsetObjectCanBeUsed
+				text = FilesKt.readText(file, Charset.forName("UTF-8"));
+			} catch (Exception e) {
+				Log.e(TAG, "getText: " + file, e);
+				continue;
+			}
+			String prefix = relativeParent(dir, file);
+			String[] split = text.split("[\\n\\r]+");
+			ShaderInfo info = null;
+			for (String line : split) {
+				if (line.startsWith("[")) {
+					addIfValid(info, prefix);
+					info = new ShaderInfo(line.replaceAll("[\\[\\]]", ""), "unknown");
+				} else if (info != null) {
+					try {
+						info.set(line);
+					} catch (Exception e) {
+						Log.e(TAG, "initShaderSpinner: ", e);
 					}
 				}
-				if (info != null && info.fragment != null && info.vertex != null) {
-					shaders.add(info);
-				}
 			}
-			Collections.sort(shaders);
+			addIfValid(info, prefix);
 		}
+		// 2) demais formatos (.vsh/.fsh, .glsl, .shader, pares e fragments avulsos...)
+		for (ShaderScanner.Entry e : found.entries) {
+			ShaderInfo info = new ShaderInfo(e.name, "auto");
+			info.fragment = e.fragment;
+			info.vertex = e.vertex;
+			shaders.add(info);
+		}
+		Collections.sort(shaders);
 		shaders.add(0, new ShaderInfo(getString(R.string.identity_filter), "woesss"));
 		adapter.notifyDataSetChanged();
 		ShaderInfo selected = params.shader;
@@ -483,6 +481,28 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 				binding.spShader.setSelection(position);
 			}
 		}
+	}
+
+	private void addIfValid(ShaderInfo info, String prefix) {
+		if (info == null || info.fragment == null) {
+			return;
+		}
+		info.fragment = prefix + info.fragment;
+		if (info.vertex != null) {
+			info.vertex = prefix + info.vertex;
+		}
+		shaders.add(info);
+	}
+
+	/** Caminho da pasta do arquivo relativo a raiz de shaders, com "/" no final (ou vazio). */
+	private static String relativeParent(File root, File file) {
+		File parent = file.getParentFile();
+		if (parent == null || parent.equals(root)) {
+			return "";
+		}
+		String r = parent.getPath().substring(root.getPath().length()).replace('\\', '/');
+		while (r.startsWith("/")) r = r.substring(1);
+		return r.isEmpty() ? "" : r + "/";
 	}
 
 	private void showCharsetPicker(View v) {

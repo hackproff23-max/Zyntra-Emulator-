@@ -54,6 +54,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.pm.ShortcutManagerCompat;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.core.widget.TextViewCompat;
@@ -81,6 +82,7 @@ import ru.playsoftware.j2meloader.config.ButtonImagesManager;
 import ru.playsoftware.j2meloader.config.ButtonImagesUi;
 import ru.playsoftware.j2meloader.config.Config;
 import ru.playsoftware.j2meloader.config.LettersDialog;
+import ru.playsoftware.j2meloader.config.ShaderScanner;
 import ru.playsoftware.j2meloader.config.ProfilesActivity;
 import ru.playsoftware.j2meloader.databinding.DialogInputBinding;
 import ru.playsoftware.j2meloader.databinding.FragmentAppslistBinding;
@@ -117,9 +119,13 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 					return;
 				}
 				int count = importShaderFiles(uris);
-				Toast.makeText(requireContext(),
-						count > 0 ? getString(R.string.shaders_imported, count) : getString(R.string.shaders_import_error),
-						Toast.LENGTH_LONG).show();
+				reportShaderImport(count);
+			});
+	private final ActivityResultLauncher<Uri> pickShaderFolder = registerForActivityResult(
+			new ActivityResultContracts.OpenDocumentTree(), uri -> {
+				if (uri != null) {
+					importShaderTree(uri);
+				}
 			});
 	private PopupWindow gridMenu;
 
@@ -413,6 +419,81 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 		return count;
 	}
 
+	private void reportShaderImport(int copied) {
+		Context context = getContext();
+		if (context == null) {
+			return;
+		}
+		if (copied <= 0) {
+			Toast.makeText(context, R.string.shaders_import_error, Toast.LENGTH_LONG).show();
+			return;
+		}
+		ShaderScanner.Result r = ShaderScanner.scan(new File(Config.getEmulatorDir() + Config.SHADERS_DIR));
+		int shaders = r.entries.size() + r.iniFiles.size();
+		Toast.makeText(context, getString(R.string.shaders_imported_found, copied, shaders), Toast.LENGTH_LONG).show();
+	}
+
+	/** Copia uma pasta inteira (com subpastas) para shaders/<nome da pasta>/ em segundo plano. */
+	private void importShaderTree(Uri treeUri) {
+		Context appContext = requireContext().getApplicationContext();
+		FragmentActivity activity = requireActivity();
+		new Thread(() -> {
+			int count = 0;
+			try {
+				DocumentFile root = DocumentFile.fromTreeUri(appContext, treeUri);
+				if (root != null) {
+					String name = root.getName() == null ? "shaders" : new File(root.getName()).getName();
+					File dest = new File(Config.getEmulatorDir() + Config.SHADERS_DIR, name);
+					if (dest.isDirectory() || dest.mkdirs()) {
+						count = copyTree(appContext, root, dest, 0, new int[]{0});
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			int copied = count;
+			activity.runOnUiThread(() -> reportShaderImport(copied));
+		}, "ShaderImport").start();
+	}
+
+	private static int copyTree(Context context, DocumentFile dir, File dest, int depth, int[] total) {
+		int count = 0;
+		DocumentFile[] children = dir.listFiles();
+		for (DocumentFile child : children) {
+			if (total[0] >= 3000 || depth > 6) {
+				break;
+			}
+			String name = child.getName();
+			if (name == null || name.startsWith(".")) {
+				continue;
+			}
+			name = new File(name).getName();
+			if (child.isDirectory()) {
+				File sub = new File(dest, name);
+				if (sub.isDirectory() || sub.mkdirs()) {
+					count += copyTree(context, child, sub, depth + 1, total);
+				}
+			} else if (child.isFile() && child.length() <= 5L * 1024 * 1024) {
+				try (java.io.InputStream in = context.getContentResolver().openInputStream(child.getUri());
+					 java.io.OutputStream out = new java.io.FileOutputStream(new File(dest, name))) {
+					if (in == null) {
+						continue;
+					}
+					byte[] buf = new byte[8192];
+					int n;
+					while ((n = in.read(buf)) > 0) {
+						out.write(buf, 0, n);
+					}
+					count++;
+					total[0]++;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return count;
+	}
+
 	/** Menu em grade (2 colunas x 3 linhas) aberto pelo icone no canto da barra. */
 	private void showGridMenu(FragmentActivity activity) {
 		if (gridMenu != null && gridMenu.isShowing()) {
@@ -446,7 +527,18 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 		});
 		content.findViewById(R.id.menu_shaders).setOnClickListener(v -> {
 			popup.dismiss();
-			pickShaderFiles.launch(new String[]{"*/*"});
+			new AlertDialog.Builder(activity)
+					.setTitle(R.string.menu_import_shaders)
+					.setItems(new String[]{getString(R.string.shaders_pick_folder), getString(R.string.shaders_pick_files)},
+							(d, which) -> {
+								if (which == 0) {
+									pickShaderFolder.launch(null);
+								} else {
+									pickShaderFiles.launch(new String[]{"*/*"});
+								}
+							})
+					.setNegativeButton(android.R.string.cancel, null)
+					.show();
 		});
 		content.findViewById(R.id.menu_png).setOnClickListener(v -> {
 			popup.dismiss();

@@ -90,6 +90,10 @@ public class AppInstaller {
 		this.appListModel = appListModel;
 	}
 
+	String getAppDirName() {
+		return appDirName;
+	}
+
 	Descriptor getNewDescriptor() {
 		return newDesc;
 	}

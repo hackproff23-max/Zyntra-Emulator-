@@ -30,4 +30,9 @@
         app:showAsAction="always"
         android:orderInCategory="3" />
 
+    <item
+        android:id="@+id/action_install_folder"
+        android:title="Instalar pasta com perfil"
+        app:showAsAction="never"
+        android:orderInCategory="4" />
 </menu>

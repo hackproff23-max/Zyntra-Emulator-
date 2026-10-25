@@ -169,4 +169,11 @@
     <string name="vk_letters_title">Letra de cada tecla</string>
     <string name="vk_letters_pick">Letra da tecla %1$s</string>
     <string name="vk_letters_reset">Padrão</string>
+    <string name="menu_more">Menu</string>
+    <string name="menu_letters">Configurar letras</string>
+    <string name="menu_profiles_editor">Editor e criar perfil</string>
+    <string name="menu_import_shaders">Importar shaders</string>
+    <string name="menu_import_png">Importar botões PNG</string>
+    <string name="shaders_imported">%1$d arquivo(s) importado(s) para a pasta de shaders</string>
+    <string name="shaders_import_error">Não foi possível importar os arquivos de shader</string>
 </resources>

@@ -278,4 +278,11 @@
     <string name="vk_letters_title">Letter for each key</string>
     <string name="vk_letters_pick">Letter for key %1$s</string>
     <string name="vk_letters_reset">Default</string>
+    <string name="menu_more">Menu</string>
+    <string name="menu_letters">Configure letters</string>
+    <string name="menu_profiles_editor">Profile editor / create profile</string>
+    <string name="menu_import_shaders">Import shaders</string>
+    <string name="menu_import_png">Import PNG buttons</string>
+    <string name="shaders_imported">%1$d file(s) imported to the shaders folder</string>
+    <string name="shaders_import_error">Could not import the shader files</string>
 </resources>

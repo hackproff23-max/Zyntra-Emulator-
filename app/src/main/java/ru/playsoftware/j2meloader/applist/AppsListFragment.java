@@ -41,11 +41,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -75,7 +77,10 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.disposables.Disposable;
 import ru.playsoftware.j2meloader.R;
+import ru.playsoftware.j2meloader.config.ButtonImagesManager;
+import ru.playsoftware.j2meloader.config.ButtonImagesUi;
 import ru.playsoftware.j2meloader.config.Config;
+import ru.playsoftware.j2meloader.config.LettersDialog;
 import ru.playsoftware.j2meloader.config.ProfilesActivity;
 import ru.playsoftware.j2meloader.databinding.DialogInputBinding;
 import ru.playsoftware.j2meloader.databinding.FragmentAppslistBinding;
@@ -89,6 +94,34 @@ import ru.playsoftware.j2meloader.util.LogUtils;
 import ru.woesss.j2me.installer.InstallerDialog;
 
 public class AppsListFragment extends Fragment implements MenuProvider, AppsListAdapter.OnItemClickListener {
+
+	private String pendingImageSlot;
+	private boolean pendingImagePressed;
+	private final ActivityResultLauncher<String> pickButtonImage = registerForActivityResult(
+			new ActivityResultContracts.GetContent(), uri -> {
+				if (uri == null || pendingImageSlot == null) {
+					return;
+				}
+				int result = ButtonImagesManager.importPng(requireContext(), uri, pendingImageSlot, pendingImagePressed);
+				int msg = result == ButtonImagesManager.OK ? R.string.vk_img_imported
+						: result == ButtonImagesManager.ERR_STORAGE ? R.string.vk_img_storage_error
+						: R.string.vk_img_invalid;
+				Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
+				if (result == ButtonImagesManager.OK) {
+					showButtonImages();
+				}
+			});
+	private final ActivityResultLauncher<String[]> pickShaderFiles = registerForActivityResult(
+			new ActivityResultContracts.OpenMultipleDocuments(), uris -> {
+				if (uris == null || uris.isEmpty()) {
+					return;
+				}
+				int count = importShaderFiles(uris);
+				Toast.makeText(requireContext(),
+						count > 0 ? getString(R.string.shaders_imported, count) : getString(R.string.shaders_import_error),
+						Toast.LENGTH_LONG).show();
+			});
+	private PopupWindow gridMenu;
 
 	private final ActivityResultLauncher<Void> openFileLauncher = registerForActivityResult(
 			new ActivityResultContract<Void, Uri>() {
@@ -296,30 +329,8 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 	public boolean onMenuItemSelected(MenuItem item) {
 		FragmentActivity activity = requireActivity();
 		int itemId = item.getItemId();
-		if (itemId == R.id.action_about) {
-			AboutDialogFragment aboutDialogFragment = new AboutDialogFragment();
-			aboutDialogFragment.show(getChildFragmentManager(), "about");
-		} else if (itemId == R.id.action_profiles) {
-			Intent intentProfiles = new Intent(activity, ProfilesActivity.class);
-			startActivity(intentProfiles);
-		} else if (item.getItemId() == R.id.action_settings) {
-			startActivity(new Intent(activity, SettingsActivity.class));
-		} else if (itemId == R.id.action_help) {
-			HelpDialogFragment helpDialogFragment = new HelpDialogFragment();
-			helpDialogFragment.show(getChildFragmentManager(), "help");
-		} else if (itemId == R.id.action_donate) {
-			Intent donationsIntent = new Intent(activity, DonationsActivity.class);
-			startActivity(donationsIntent);
-		} else if (itemId == R.id.action_save_log) {
-			try {
-				LogUtils.writeLog();
-				Toast.makeText(activity, R.string.log_saved, Toast.LENGTH_SHORT).show();
-			} catch (IOException e) {
-				e.printStackTrace();
-				Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show();
-			}
-		} else if (itemId == R.id.action_exit_app) {
-			activity.finish();
+		if (itemId == R.id.action_more) {
+			showGridMenu(activity);
 		} else if (itemId == R.id.action_sort) {
 			showSortDialog();
 		} else if (itemId == R.id.action_view) {
@@ -351,6 +362,102 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 			return false;
 		}
 		return true;
+	}
+
+	private void showButtonImages() {
+		ButtonImagesUi.showSlots(requireContext(), (slot, pressed) -> {
+			pendingImageSlot = slot;
+			pendingImagePressed = pressed;
+			pickButtonImage.launch("image/*");
+		});
+	}
+
+	/** Copia os arquivos escolhidos (.ini, .fsh, .vsh...) para a pasta de shaders do emulador. */
+	private int importShaderFiles(List<Uri> uris) {
+		File dir = new File(Config.getEmulatorDir() + Config.SHADERS_DIR);
+		if (!dir.isDirectory() && !dir.mkdirs()) {
+			return 0;
+		}
+		int count = 0;
+		for (Uri uri : uris) {
+			String name = null;
+			try (android.database.Cursor c = requireContext().getContentResolver()
+					.query(uri, new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+				if (c != null && c.moveToFirst()) {
+					name = c.getString(0);
+				}
+			} catch (Exception ignored) {
+			}
+			if (name == null || name.isEmpty()) {
+				name = uri.getLastPathSegment();
+			}
+			if (name == null) {
+				continue;
+			}
+			name = new File(name).getName();
+			try (java.io.InputStream in = requireContext().getContentResolver().openInputStream(uri);
+				 java.io.OutputStream out = new java.io.FileOutputStream(new File(dir, name))) {
+				if (in == null) {
+					continue;
+				}
+				byte[] buf = new byte[8192];
+				int n;
+				while ((n = in.read(buf)) > 0) {
+					out.write(buf, 0, n);
+				}
+				count++;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return count;
+	}
+
+	/** Menu em grade (2 colunas x 3 linhas) aberto pelo icone no canto da barra. */
+	private void showGridMenu(FragmentActivity activity) {
+		if (gridMenu != null && gridMenu.isShowing()) {
+			gridMenu.dismiss();
+			return;
+		}
+		View content = LayoutInflater.from(activity).inflate(R.layout.popup_main_menu, null);
+		PopupWindow popup = new PopupWindow(content, ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT, true);
+		if (android.os.Build.VERSION.SDK_INT >= 21) {
+			popup.setElevation(16f);
+		}
+		android.util.TypedValue tv = new android.util.TypedValue();
+		activity.getTheme().resolveAttribute(android.R.attr.colorBackground, tv, true);
+		popup.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(tv.data));
+		gridMenu = popup;
+		content.findViewById(R.id.menu_settings).setOnClickListener(v -> {
+			popup.dismiss();
+			startActivity(new Intent(activity, SettingsActivity.class));
+		});
+		content.findViewById(R.id.menu_letters).setOnClickListener(v -> {
+			popup.dismiss();
+			LettersDialog.show(activity);
+		});
+		content.findViewById(R.id.menu_profiles).setOnClickListener(v -> {
+			popup.dismiss();
+			startActivity(new Intent(activity, ProfilesActivity.class));
+		});
+		content.findViewById(R.id.menu_shaders).setOnClickListener(v -> {
+			popup.dismiss();
+			pickShaderFiles.launch(new String[]{"*/*"});
+		});
+		content.findViewById(R.id.menu_png).setOnClickListener(v -> {
+			popup.dismiss();
+			showButtonImages();
+		});
+		content.findViewById(R.id.menu_exit).setOnClickListener(v -> {
+			popup.dismiss();
+			activity.finish();
+		});
+		View anchor = activity.findViewById(R.id.action_more);
+		if (anchor == null) {
+			anchor = requireView();
+		}
+		popup.showAsDropDown(anchor, 0, 0, android.view.Gravity.END);
 	}
 
 	private void showSortDialog() {

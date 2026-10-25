@@ -177,6 +177,13 @@ public class VirtualKeyboard implements Overlay, Runnable {
 	/** Letras padrao das teclas 1..9, 0, *, # no modo letras. */
 	public static final String DEFAULT_LETTERS = "qweasdzxcfrv";
 	public static final int LETTER_KEYS = 12;
+	public static final String PREF_LETTERS = "vk_letters";
+
+	/** Le as 12 letras globais (ou o padrao). */
+	public static String loadLetters(android.content.SharedPreferences prefs) {
+		String s = prefs.getString(PREF_LETTERS, null);
+		return s != null && s.length() >= LETTER_KEYS ? s : DEFAULT_LETTERS;
+	}
 	private final RectF virtualScreen = new RectF();
 
 	private Canvas target;
@@ -233,7 +240,8 @@ public class VirtualKeyboard implements Overlay, Runnable {
 			keypad[i].index = i;
 		}
 		if (settings.vkLetterMode) {
-			applyLetters(settings.vkLetters);
+			applyLetters(loadLetters(androidx.preference.PreferenceManager
+					.getDefaultSharedPreferences(ContextHolder.getAppContext())));
 		}
 
 		layoutVariant = readLayoutType();

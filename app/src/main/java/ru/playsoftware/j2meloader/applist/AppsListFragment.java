@@ -135,7 +135,7 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 					return;
 				}
 				ru.woesss.j2me.installer.BatchInstaller.chooseProfileAndStart(
-						requireActivity(), appListViewModel, new File(uri.getPath()));
+						requireActivity(), this.appListViewModel, new File(uri.getPath()));
 			});
 
 	private final ActivityResultLauncher<Void> openFileLauncher = registerForActivityResult(

@@ -69,7 +69,8 @@
     </style>
 
     <style name="ButtonStyle" parent="Widget.AppCompat.Button.Colored">
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/app_bold</item>
+        <item name="fontFamily">@font/app_bold</item>
         <item name="elevation">1dp</item>
         <item name="android:background">@drawable/bg_button</item>
     </style>
@@ -83,11 +84,13 @@
 
     <!-- Fonte bold padrao em todo o emulador -->
     <style name="TextViewBold" parent="Widget.AppCompat.TextView">
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/app_bold</item>
+        <item name="fontFamily">@font/app_bold</item>
     </style>
 
     <style name="EditTextBold" parent="Widget.AppCompat.EditText">
-        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/app_bold</item>
+        <item name="fontFamily">@font/app_bold</item>
     </style>
 
 </resources>

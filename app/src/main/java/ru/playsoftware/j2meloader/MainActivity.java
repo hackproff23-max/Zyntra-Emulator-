@@ -22,11 +22,18 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
@@ -55,7 +62,15 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// desenha por baixo da barra de status / notch: o cinza da barra sobe ate o topo
+		WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 		setContentView(R.layout.activity_main);
+		Toolbar toolbar = findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		if (getSupportActionBar() != null) {
+			getSupportActionBar().setDisplayShowTitleEnabled(false);
+		}
+		applyInsets(findViewById(R.id.drawer_layout), toolbar);
 		storagePermissionHelper.launch(this);
 		appListModel = new ViewModelProvider(this).get(AppListModel.class);
 		if (savedInstanceState == null) {
@@ -69,6 +84,22 @@ public class MainActivity extends AppCompatActivity {
 					.replace(R.id.container, fragment).commit();
 		}
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
+	}
+
+	/** Empurra o conteudo da barra para baixo do notch, mas deixa o fundo cinza cobrir o topo. */
+	private void applyInsets(View root, Toolbar toolbar) {
+		TypedValue tv = new TypedValue();
+		getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true);
+		final int barHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+		ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+			Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
+					| WindowInsetsCompat.Type.displayCutout());
+			toolbar.setPadding(0, bars.top, 0, 0);
+			toolbar.getLayoutParams().height = barHeight + bars.top;
+			toolbar.requestLayout();
+			v.setPadding(bars.left, 0, bars.right, bars.bottom);
+			return insets;
+		});
 	}
 
 	private void checkAndCreateDirs() {

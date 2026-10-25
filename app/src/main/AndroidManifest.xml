@@ -43,6 +43,7 @@
         tools:ignore="RtlEnabled">
         <activity
             android:name=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:launchMode="singleTask"
             android:exported="true">

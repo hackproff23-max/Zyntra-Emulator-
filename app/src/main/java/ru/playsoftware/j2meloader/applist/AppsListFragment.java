@@ -97,6 +97,8 @@ import ru.woesss.j2me.installer.InstallerDialog;
 
 public class AppsListFragment extends Fragment implements MenuProvider, AppsListAdapter.OnItemClickListener {
 
+	private static final int GRID_COLUMNS = 4;
+
 	private String pendingImageSlot;
 	private boolean pendingImagePressed;
 	private final ActivityResultLauncher<String> pickButtonImage = registerForActivityResult(
@@ -211,7 +213,7 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 		int viewType = preferences.getInt(PREF_APPS_VIEW, AppsListAdapter.LAYOUT_TYPE_GRID);
 		int spanCount;
 		if (viewType == AppsListAdapter.LAYOUT_TYPE_GRID) {
-			spanCount = getResources().getConfiguration().screenWidthDp / 90;
+			spanCount = GRID_COLUMNS;
 		} else {
 			spanCount = 1;
 			itemDecoration = new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL);
@@ -221,7 +223,7 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 		layoutManager = new GridLayoutManager(requireContext(), spanCount);
 		requireActivity().addOnConfigurationChangedListener(configuration -> {
 			if (adapter.getItemViewType(0) == AppsListAdapter.LAYOUT_TYPE_GRID) {
-				layoutManager.setSpanCount(configuration.screenWidthDp / 90);
+				layoutManager.setSpanCount(GRID_COLUMNS);
 			}
 		});
 		binding.list.setLayoutManager(layoutManager);
@@ -360,7 +362,7 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 			}
 			int spanCount;
 			if (viewType == AppsListAdapter.LAYOUT_TYPE_GRID) {
-				spanCount = getResources().getConfiguration().screenWidthDp / 90;
+				spanCount = GRID_COLUMNS;
 				if (itemDecoration != null) {
 					binding.list.removeItemDecoration(itemDecoration);
 				}

@@ -1,6 +1,7 @@
 <?xml version= "1.0" encoding = "utf-8" ?>
 <ru.playsoftware.j2meloader.applist.AppItemLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
@@ -32,9 +33,10 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearance"
             android:ellipsize="end"
-            android:maxLines="2"
+            android:fontFamily="@font/app_bold"
+            app:fontFamily="@font/app_bold"
+            android:maxLines="1"
             android:textSize="15sp"
-            android:textStyle="bold"
             tools:text="Example MIDlet Name" />
 
         <!-- Author and version app -->

@@ -420,7 +420,10 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 			return;
 		}
 		View content = LayoutInflater.from(activity).inflate(R.layout.popup_main_menu, null);
-		PopupWindow popup = new PopupWindow(content, ViewGroup.LayoutParams.WRAP_CONTENT,
+		// Largura explicita: ao inflar sem pai o layout_width do XML e ignorado e a grade ficava com 0 de largura.
+		int popupWidth = Math.min((int) (280 * activity.getResources().getDisplayMetrics().density),
+				activity.getResources().getDisplayMetrics().widthPixels - 16);
+		PopupWindow popup = new PopupWindow(content, popupWidth,
 				ViewGroup.LayoutParams.WRAP_CONTENT, true);
 		if (android.os.Build.VERSION.SDK_INT >= 21) {
 			popup.setElevation(16f);

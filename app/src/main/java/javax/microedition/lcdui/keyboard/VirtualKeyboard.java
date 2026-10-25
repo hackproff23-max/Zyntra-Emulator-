@@ -173,6 +173,10 @@ public class VirtualKeyboard implements Overlay, Runnable {
 	private final File saveFile;
 	private final ProfileModel settings;
 	private final ButtonImages images;
+
+	/** Letras padrao das teclas 1..9, 0, *, # no modo letras. */
+	public static final String DEFAULT_LETTERS = "qweasdzxcfrv";
+	public static final int LETTER_KEYS = 12;
 	private final RectF virtualScreen = new RectF();
 
 	private Canvas target;
@@ -228,6 +232,9 @@ public class VirtualKeyboard implements Overlay, Runnable {
 		for (int i = 0; i < keypad.length; i++) {
 			keypad[i].index = i;
 		}
+		if (settings.vkLetterMode) {
+			applyLetters(settings.vkLetters);
+		}
 
 		layoutVariant = readLayoutType();
 
@@ -251,6 +258,24 @@ public class VirtualKeyboard implements Overlay, Runnable {
 		HandlerThread thread = new HandlerThread("MidletVirtualKeyboard");
 		thread.start();
 		handler = new Handler(thread.getLooper());
+	}
+
+	/**
+	 * Modo letras: as 12 teclas numericas passam a mostrar e enviar letras.
+	 * O hashCode (usado para salvar o layout) continua o da tecla numerica original.
+	 */
+	private void applyLetters(String letters) {
+		if (letters == null || letters.length() < LETTER_KEYS) {
+			letters = DEFAULT_LETTERS;
+		}
+		for (int i = 0; i < LETTER_KEYS; i++) {
+			char c = Character.toLowerCase(letters.charAt(i));
+			if (!Character.isLetterOrDigit(c)) {
+				c = DEFAULT_LETTERS.charAt(i);
+			}
+			keypad[i].outCode = c;
+			keypad[i].label = String.valueOf(Character.toUpperCase(c));
+		}
 	}
 
 	public void onLayoutChanged(int variant) {
@@ -1211,7 +1236,7 @@ public class VirtualKeyboard implements Overlay, Runnable {
 	}
 
 	private class VirtualKey implements Runnable {
-		final String label;
+		String label;
 		final int keyCode;
 		final RectF rect = new RectF();
 		final PointF snapOffset = new PointF();
@@ -1223,11 +1248,14 @@ public class VirtualKeyboard implements Overlay, Runnable {
 		boolean opaque = true;
 		int corners;
 		int index;
+		/** Codigo realmente enviado ao jogo (igual a keyCode, exceto no modo letras). */
+		int outCode;
 		private final int hashCode;
 		private int repeatCount;
 
 		VirtualKey(int keyCode, String label) {
 			this.keyCode = keyCode;
+			this.outCode = keyCode;
 			this.label = label;
 			hashCode = 31 * (31 + this.keyCode);
 		}
@@ -1306,19 +1334,19 @@ public class VirtualKeyboard implements Overlay, Runnable {
 
 		public void onRepeat() {
 			handler.postDelayed(this, repeatCount > 6 ? 80 : REPEAT_INTERVALS[repeatCount++]);
-			target.postKeyRepeated(keyCode);
+			target.postKeyRepeated(outCode);
 		}
 
 		protected void onDown() {
 			selected = true;
-			target.postKeyPressed(keyCode);
+			target.postKeyPressed(outCode);
 			handler.postDelayed(this, 400);
 		}
 
 		public void onUp() {
 			selected = false;
 			handler.removeCallbacks(this);
-			target.postKeyReleased(keyCode);
+			target.postKeyReleased(outCode);
 		}
 	}
 

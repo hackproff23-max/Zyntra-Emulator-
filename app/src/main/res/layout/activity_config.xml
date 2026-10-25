@@ -678,7 +678,7 @@
                 android:layout_marginTop="5dp"
                 android:background="?bg_config_card"
                 android:visibility="gone"
-                app:constraint_referenced_ids="cxVKUseImages,cmdVKImages,cxVKForceOpacity,cxVKFeedback,tfVKBack,tfVKSelFore,textView7,cmdVKSelFore,cmdVKFore,tfVKOutline,cmdVKBack,sbVKAlpha,cmdVKSelBack,tfVKHideDelay,textView13,spButtonsShape,tvOpacity,cmdVKOutline,textView12,tfVKFore,tfVKSelBack"
+                app:constraint_referenced_ids="cxVKUseImages,cmdVKImages,cxVKLetterMode,cmdVKLetters,cxVKForceOpacity,cxVKFeedback,tfVKBack,tfVKSelFore,textView7,cmdVKSelFore,cmdVKFore,tfVKOutline,cmdVKBack,sbVKAlpha,cmdVKSelBack,tfVKHideDelay,textView13,spButtonsShape,tvOpacity,cmdVKOutline,textView12,tfVKFore,tfVKSelBack"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -1007,11 +1007,37 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="5dp"
                 android:text="@string/pref_vk_images_manage"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/cxVKUseImages" />
             <!-- End button PNG images -->
+
+            <!-- Letter keyboard mode -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/cxVKLetterMode"
+                style="@style/SwitchStyle"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/height_config_row"
+                android:layout_marginHorizontal="5dp"
+                android:checked="false"
+                android:text="@string/pref_vk_letter_mode"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cmdVKImages" />
+
+            <Button
+                android:id="@+id/cmdVKLetters"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/height_config_row"
+                android:layout_marginHorizontal="9dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="5dp"
+                android:text="@string/pref_vk_letters_map"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cxVKLetterMode" />
+            <!-- End letter keyboard mode -->
 
             <androidx.constraintlayout.widget.Barrier
                 android:id="@+id/barrierInputConfig"

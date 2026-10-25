@@ -270,6 +270,12 @@
     <string name="vk_img_pressed">Pressed image</string>
     <string name="vk_img_remove">Remove images from this button</string>
     <string name="vk_img_imported">Image imported</string>
-    <string name="vk_img_invalid">Invalid PNG file</string>
+    <string name="vk_img_invalid">Not a valid image file</string>
     <string name="vk_img_removed">Images removed</string>
+    <string name="vk_img_storage_error">Could not save the image. Check the storage permission (all files access).</string>
+    <string name="pref_vk_letter_mode">Letter keyboard (keys send letters)</string>
+    <string name="pref_vk_letters_map">Choose which letter each key sends…</string>
+    <string name="vk_letters_title">Letter for each key</string>
+    <string name="vk_letters_pick">Letter for key %1$s</string>
+    <string name="vk_letters_reset">Default</string>
 </resources>

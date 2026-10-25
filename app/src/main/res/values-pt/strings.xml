@@ -161,6 +161,12 @@
     <string name="vk_img_pressed">Imagem pressionada</string>
     <string name="vk_img_remove">Remover imagens deste botão</string>
     <string name="vk_img_imported">Imagem importada</string>
-    <string name="vk_img_invalid">Arquivo PNG inválido</string>
+    <string name="vk_img_invalid">Arquivo de imagem inválido</string>
     <string name="vk_img_removed">Imagens removidas</string>
+    <string name="vk_img_storage_error">Não foi possível salvar a imagem. Verifique a permissão de armazenamento (acesso a todos os arquivos).</string>
+    <string name="pref_vk_letter_mode">Teclado por letras (as teclas enviam letras)</string>
+    <string name="pref_vk_letters_map">Escolher a letra de cada tecla…</string>
+    <string name="vk_letters_title">Letra de cada tecla</string>
+    <string name="vk_letters_pick">Letra da tecla %1$s</string>
+    <string name="vk_letters_reset">Padrão</string>
 </resources>

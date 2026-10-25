@@ -75,6 +75,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.microedition.lcdui.keyboard.ButtonImages;
+import javax.microedition.lcdui.keyboard.VirtualKeyboard;
 import javax.microedition.shell.MicroActivity;
 import javax.microedition.util.ContextHolder;
 
@@ -107,16 +108,19 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 	private boolean needShow;
 	private ActivityConfigBinding binding;
 	private String pendingImageSlot;
+	private String letters = VirtualKeyboard.DEFAULT_LETTERS;
 	private boolean pendingImagePressed;
 	private final ActivityResultLauncher<String> pickButtonPng = registerForActivityResult(
 			new ActivityResultContracts.GetContent(), uri -> {
 				if (uri == null || pendingImageSlot == null) {
 					return;
 				}
-				boolean ok = ButtonImagesManager.importPng(this, uri, pendingImageSlot, pendingImagePressed);
-				Toast.makeText(this, ok ? R.string.vk_img_imported : R.string.vk_img_invalid,
-						Toast.LENGTH_SHORT).show();
-				if (ok) {
+				int result = ButtonImagesManager.importPng(this, uri, pendingImageSlot, pendingImagePressed);
+				int msg = result == ButtonImagesManager.OK ? R.string.vk_img_imported
+						: result == ButtonImagesManager.ERR_STORAGE ? R.string.vk_img_storage_error
+						: R.string.vk_img_invalid;
+				Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+				if (result == ButtonImagesManager.OK) {
 					binding.cxVKUseImages.setChecked(true);
 					showButtonImagesDialog();
 				}
@@ -207,6 +211,7 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 		binding.cmdVKSelFore.setOnClickListener(this);
 		binding.cmdVKOutline.setOnClickListener(this);
 		binding.cmdVKImages.setOnClickListener(this);
+		binding.cmdVKLetters.setOnClickListener(this);
 		binding.btEncoding.setOnClickListener(this::showCharsetPicker);
 		binding.btShaderTune.setOnClickListener(this::showShaderSettings);
 		binding.tfScaleRatioValue.addTextChangedListener(new TextWatcher() {
@@ -640,6 +645,9 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 		binding.cxVKFeedback.setChecked(params.vkFeedback);
 		binding.cxVKForceOpacity.setChecked(params.vkForceOpacity);
 		binding.cxVKUseImages.setChecked(params.vkUseImages);
+		binding.cxVKLetterMode.setChecked(params.vkLetterMode);
+		letters = params.vkLetters != null && params.vkLetters.length() >= VirtualKeyboard.LETTER_KEYS
+				? params.vkLetters : VirtualKeyboard.DEFAULT_LETTERS;
 		binding.cxTouchInput.setChecked(params.touchInput);
 		int fpsLimit = params.fpsLimit;
 		binding.etFpsLimit.setText(fpsLimit > 0 ? Integer.toString(fpsLimit) : "");
@@ -740,6 +748,8 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 			params.vkFeedback = binding.cxVKFeedback.isChecked();
 			params.vkForceOpacity = binding.cxVKForceOpacity.isChecked();
 			params.vkUseImages = binding.cxVKUseImages.isChecked();
+			params.vkLetterMode = binding.cxVKLetterMode.isChecked();
+			params.vkLetters = letters;
 			params.touchInput = binding.cxTouchInput.isChecked();
 
 			params.keyCodesLayout = binding.spLayout.getSelectedItemPosition();
@@ -894,11 +904,60 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 			showColorPicker(binding.tfVKOutline);
 		} else if (id == R.id.cmdVKImages) {
 			showButtonImagesDialog();
+		} else if (id == R.id.cmdVKLetters) {
+			showLettersDialog();
 		} else if (id == R.id.cmdKeyMappings) {
 			Intent i = new Intent(getIntent().getAction(), Uri.parse(configDir.getPath()),
 					this, KeyMapperActivity.class);
 			startActivity(i);
 		}
+	}
+
+	/** Lista as 12 teclas numericas e deixa escolher qual letra cada uma envia. */
+	private void showLettersDialog() {
+		String[] names = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "*", "#"};
+		String[] items = new String[names.length];
+		for (int i = 0; i < names.length; i++) {
+			items[i] = names[i] + "  \u2192  " + Character.toUpperCase(letters.charAt(i));
+		}
+		new AlertDialog.Builder(this)
+				.setTitle(R.string.vk_letters_title)
+				.setItems(items, (dialog, which) -> showLetterPicker(which, names[which]))
+				.setNeutralButton(R.string.vk_letters_reset, (dialog, which) -> {
+					letters = VirtualKeyboard.DEFAULT_LETTERS;
+					showLettersDialog();
+				})
+				.setPositiveButton(android.R.string.ok, null)
+				.show();
+	}
+
+	private void showLetterPicker(int slot, String keyName) {
+		String[] abc = new String[36];
+		for (int i = 0; i < 26; i++) {
+			abc[i] = String.valueOf((char) ('A' + i));
+		}
+		for (int i = 0; i < 10; i++) {
+			abc[26 + i] = String.valueOf((char) ('0' + i));
+		}
+		int checked = abc.length;
+		char cur = Character.toUpperCase(letters.charAt(slot));
+		for (int i = 0; i < abc.length; i++) {
+			if (abc[i].charAt(0) == cur) {
+				checked = i;
+				break;
+			}
+		}
+		new AlertDialog.Builder(this)
+				.setTitle(getString(R.string.vk_letters_pick, keyName))
+				.setSingleChoiceItems(abc, checked, (dialog, which) -> {
+					StringBuilder sb = new StringBuilder(letters);
+					sb.setCharAt(slot, Character.toLowerCase(abc[which].charAt(0)));
+					letters = sb.toString();
+					dialog.dismiss();
+					showLettersDialog();
+				})
+				.setNegativeButton(android.R.string.cancel, (dialog, which) -> showLettersDialog())
+				.show();
 	}
 
 	private void showButtonImagesDialog() {

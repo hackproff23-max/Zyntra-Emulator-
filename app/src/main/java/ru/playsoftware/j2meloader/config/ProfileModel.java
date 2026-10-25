@@ -139,6 +139,14 @@ public class ProfileModel {
 	@SerializedName("VkUseImages")
 	public boolean vkUseImages;
 
+	/** true = teclado virtual por letras (as 12 teclas numericas enviam letras). */
+	@SerializedName("VkLetterMode")
+	public boolean vkLetterMode;
+
+	/** 12 letras para as teclas 1..9, 0, *, # (nessa ordem). null = padrao. */
+	@SerializedName("VkLetters")
+	public String vkLetters;
+
 	@SerializedName("VirtualKeyboardDelay")
 	public int vkHideDelay;
 

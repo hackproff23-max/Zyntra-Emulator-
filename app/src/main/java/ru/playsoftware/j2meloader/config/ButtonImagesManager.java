@@ -12,8 +12,14 @@ import java.io.OutputStream;
 
 import javax.microedition.lcdui.keyboard.ButtonImages;
 
-/** Importa, remove e consulta os PNGs dos botoes do teclado virtual. */
+/** Importa, remove e consulta as imagens dos botoes do teclado virtual. */
 public final class ButtonImagesManager {
+	public static final int OK = 0;
+	/** Nao foi possivel gravar na pasta do emulador (permissao de armazenamento?). */
+	public static final int ERR_STORAGE = 1;
+	/** O arquivo escolhido nao e uma imagem valida. */
+	public static final int ERR_INVALID = 2;
+
 	private ButtonImagesManager() {
 	}
 
@@ -21,40 +27,41 @@ public final class ButtonImagesManager {
 		return ButtonImages.file(slot, pressed).isFile();
 	}
 
-	/** Copies the chosen PNG into the buttons folder. Returns false if it is not a valid PNG. */
-	public static boolean importPng(Context context, Uri uri, String slot, boolean pressed) {
+	/** Copies the chosen image into the buttons folder. Returns OK, ERR_STORAGE or ERR_INVALID. */
+	public static int importPng(Context context, Uri uri, String slot, boolean pressed) {
 		File dir = new File(Config.getEmulatorDir() + ButtonImages.DIR);
 		if (!dir.isDirectory() && !dir.mkdirs()) {
-			return false;
+			return ERR_STORAGE;
 		}
 		File tmp = new File(dir, ".import.tmp");
-		try (InputStream in = context.getContentResolver().openInputStream(uri);
-			 OutputStream out = new FileOutputStream(tmp)) {
+		try (InputStream in = context.getContentResolver().openInputStream(uri)) {
 			if (in == null) {
-				return false;
+				return ERR_INVALID;
 			}
-			byte[] buf = new byte[8192];
-			int n;
-			while ((n = in.read(buf)) > 0) {
-				out.write(buf, 0, n);
+			try (OutputStream out = new FileOutputStream(tmp)) {
+				byte[] buf = new byte[8192];
+				int n;
+				while ((n = in.read(buf)) > 0) {
+					out.write(buf, 0, n);
+				}
 			}
 		} catch (IOException e) {
 			//noinspection ResultOfMethodCallIgnored
 			tmp.delete();
-			return false;
+			return ERR_STORAGE;
 		}
 		BitmapFactory.Options o = new BitmapFactory.Options();
 		o.inJustDecodeBounds = true;
 		BitmapFactory.decodeFile(tmp.getPath(), o);
-		if (o.outWidth <= 0 || o.outHeight <= 0 || !"image/png".equals(o.outMimeType)) {
+		if (o.outWidth <= 0 || o.outHeight <= 0) {
 			//noinspection ResultOfMethodCallIgnored
 			tmp.delete();
-			return false;
+			return ERR_INVALID;
 		}
 		File dst = ButtonImages.file(slot, pressed);
 		//noinspection ResultOfMethodCallIgnored
 		dst.delete();
-		return tmp.renameTo(dst);
+		return tmp.renameTo(dst) ? OK : ERR_STORAGE;
 	}
 
 	public static void delete(String slot) {

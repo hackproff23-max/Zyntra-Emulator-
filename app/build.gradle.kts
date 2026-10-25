@@ -27,6 +27,8 @@ android {
         resValue("string", "app_name", "Zyntra Emulator")
         resValue("string", "app_center", secret.getProperty("appCenterKey", ""))
         resValue("string", "fingerprint", secret.getProperty("fingerprint", ""))
+        // Somente armeabi-v7a (32-bit ARM): compila so as libs nativas desse ABI
+        ndk { abiFilters += "armeabi-v7a" }
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -92,13 +94,6 @@ android {
         }
     }
 
-    splits.abi {
-        isEnable = true
-        reset()
-        include("x86", "armeabi-v7a", "x86_64", "arm64-v8a")
-        isUniversalApk = true
-    }
-
     externalNativeBuild.ndkBuild.path("src/main/cpp/Android.mk")
 
     compileOptions {
@@ -112,7 +107,7 @@ android {
         }
         outputs.configureEach {
             if (this is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
-                outputFileName = "${rootProject.name}_$versionName-$dirName.apk"
+                outputFileName = "${rootProject.name}_$versionName-armeabi-v7a.apk"
             }
         }
     }

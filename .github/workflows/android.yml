@@ -24,6 +24,7 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      # A pasta do TinySoundFont vem vazia (era um submodulo do git); baixa aqui.
       - name: Fetch TinySoundFont
         run: |
           D=app/src/main/cpp/mmapi_tsf/TinySoundFont
@@ -32,6 +33,7 @@ jobs:
             git clone --depth 1 https://github.com/schellingb/TinySoundFont.git "$D"
           fi
 
+      # Opcional: se voce criar os secrets SIGNING_KEY e KEYSTORE_PROPERTIES, usa sua chave fixa.
       - name: Decode keystore (optional secrets)
         env:
           ENCODED_KEYSTORE: ${{ secrets.SIGNING_KEY }}
@@ -42,6 +44,7 @@ jobs:
             echo "$ENCODED_PROPS" | base64 -di > keystore.properties
           fi
 
+      # Sem secrets, cria uma chave nova a cada build (o APK sai assinado e instalavel).
       - name: Generate temporary keystore
         run: |
           if [ ! -f keystore.properties ]; then
@@ -60,4 +63,4 @@ jobs:
         uses: actions/upload-artifact@v4.3.3
         with:
           name: Zyntra-Emulator
-          path: app/build/outputs/apk/emulator/release/*.apk
+          path: app/build/outputs/apk/emulator/release/*armeabi-v7a*.apk

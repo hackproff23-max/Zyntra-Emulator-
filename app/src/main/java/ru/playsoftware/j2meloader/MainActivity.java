@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -86,17 +85,14 @@ public class MainActivity extends AppCompatActivity {
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 	}
 
-	/** Empurra o conteudo da barra para baixo do notch, mas deixa o fundo cinza cobrir o topo. */
+	/** Barra compacta colada no topo (por baixo do notch); so as laterais/rodape respeitam o sistema. */
 	private void applyInsets(View root, Toolbar toolbar) {
-		TypedValue tv = new TypedValue();
-		getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true);
-		final int barHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+		final int barHeight = Math.round(44 * getResources().getDisplayMetrics().density);
+		toolbar.getLayoutParams().height = barHeight;
+		toolbar.setPadding(0, 0, 0, 0);
 		ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
 			Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars()
 					| WindowInsetsCompat.Type.displayCutout());
-			toolbar.setPadding(0, bars.top, 0, 0);
-			toolbar.getLayoutParams().height = barHeight + bars.top;
-			toolbar.requestLayout();
 			v.setPadding(bars.left, 0, bars.right, bars.bottom);
 			return insets;
 		});

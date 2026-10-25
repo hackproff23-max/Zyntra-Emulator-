@@ -133,6 +133,11 @@ public class EmulatorApplication extends Application implements OnSharedPreferen
 	}
 
 	void setNightMode(String theme) {
+		// tema sempre escuro: fundo preto e letras brancas
+		AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+		if (true) {
+			return;
+		}
 		if (theme == null) {
 			theme = getString(R.string.pref_theme_default);
 		}

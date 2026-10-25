@@ -199,6 +199,9 @@ public class ProfileModel {
 		screenScaleToFit = true;
 		screenKeepAspectRatio = true;
 		graphicsMode = 1;
+		shader = new ShaderInfo("J5PRIME", "Fabricio");
+		shader.fragment = "J5.fsh";
+		shader.vertex = "J5.vsh";
 
 		fontSizeSmall = 18;
 		fontSizeMedium = 22;

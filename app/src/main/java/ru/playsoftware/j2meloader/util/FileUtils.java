@@ -163,6 +163,7 @@ public class FileUtils {
 		if ((dir.isDirectory() || dir.mkdirs()) && dir.canWrite()) {
 			//noinspection ResultOfMethodCallIgnored
 			new File(dir, Config.SHADERS_DIR).mkdir();
+			copyDefaultShaders(new File(dir, Config.SHADERS_DIR));
 			//noinspection ResultOfMethodCallIgnored
 			new File(dir, Config.SOUNDBANKS_DIR).mkdir();
 			//noinspection ResultOfMethodCallIgnored
@@ -176,5 +177,33 @@ public class FileUtils {
 			return true;
 		}
 		return false;
+	}
+
+	/** Copia o shader padrao (J5PRIME) dos assets para a pasta de shaders, se ainda nao existir. */
+	private static void copyDefaultShaders(File shadersDir) {
+		try {
+			android.content.res.AssetManager assets =
+					javax.microedition.util.ContextHolder.getAppContext().getAssets();
+			String[] names = assets.list("default_shaders");
+			if (names == null) {
+				return;
+			}
+			for (String name : names) {
+				File out = new File(shadersDir, name);
+				if (out.exists()) {
+					continue;
+				}
+				try (InputStream in = assets.open("default_shaders/" + name);
+					 OutputStream os = new FileOutputStream(out)) {
+					byte[] buf = new byte[8192];
+					int n;
+					while ((n = in.read(buf)) > 0) {
+						os.write(buf, 0, n);
+					}
+				}
+			}
+		} catch (Exception e) {
+			Log.e("FileUtils", "copyDefaultShaders", e);
+		}
 	}
 }

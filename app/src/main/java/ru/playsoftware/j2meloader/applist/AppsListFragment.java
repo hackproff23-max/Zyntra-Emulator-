@@ -129,6 +129,15 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 			});
 	private PopupWindow gridMenu;
 
+	private final ActivityResultLauncher<String> pickBatchFolder = registerForActivityResult(
+			new ru.playsoftware.j2meloader.util.PickDirResultContract(), uri -> {
+				if (uri == null || uri.getPath() == null) {
+					return;
+				}
+				ru.woesss.j2me.installer.BatchInstaller.chooseProfileAndStart(
+						requireActivity(), appListViewModel, new File(uri.getPath()));
+			});
+
 	private final ActivityResultLauncher<Void> openFileLauncher = registerForActivityResult(
 			new ActivityResultContract<Void, Uri>() {
 				@NonNull
@@ -218,6 +227,8 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 		binding.list.setLayoutManager(layoutManager);
 		binding.list.setAdapter(adapter);
 		binding.fab.setOnClickListener(v -> openFileLauncher.launch(null));
+		binding.fabFolder.setOnClickListener(v ->
+				pickBatchFolder.launch(Environment.getExternalStorageDirectory().getAbsolutePath()));
 		appListViewModel.getAppList().observe(getViewLifecycleOwner(), this::onDbUpdated);
 	}
 

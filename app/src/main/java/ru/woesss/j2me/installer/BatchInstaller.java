@@ -19,7 +19,6 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -195,30 +194,19 @@ public class BatchInstaller {
 		}
 	}
 
-	/** .jar e .kjx da pasta e subpastas, em ordem alfabetica. */
+	/** Somente os .jar que estao direto na pasta (sem subpastas), em ordem alfabetica. */
 	private static List<File> collect(File folder) {
 		List<File> out = new ArrayList<>();
-		collect(folder, out);
-		Collections.sort(out, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
-		return out;
-	}
-
-	private static void collect(File dir, List<File> out) {
-		File[] list = dir.listFiles();
-		if (list == null) {
-			return;
-		}
-		Arrays.sort(list);
-		for (File f : list) {
-			if (f.isDirectory()) {
-				collect(f, out);
-			} else {
-				String n = f.getName().toLowerCase();
-				if (n.endsWith(".jar") || n.endsWith(".kjx")) {
+		File[] list = folder.listFiles();
+		if (list != null) {
+			for (File f : list) {
+				if (f.isFile() && f.getName().toLowerCase().endsWith(".jar")) {
 					out.add(f);
 				}
 			}
 		}
+		Collections.sort(out, (x, y) -> x.getName().compareToIgnoreCase(y.getName()));
+		return out;
 	}
 
 	/** Copia os perfis embutidos (assets/profiles/*) para templates/ se ainda nao existirem. */

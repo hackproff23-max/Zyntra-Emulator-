@@ -468,13 +468,13 @@ public class MicroActivity extends AppCompatActivity {
 	private final androidx.activity.result.ActivityResultLauncher<String[]> pickShaderFiles =
 			registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.OpenMultipleDocuments(), uris -> {
 				if (uris != null && !uris.isEmpty()) {
-					ru.playsoftware.j2meloader.config.ShaderImporter.importFiles(this, uris);
+					ru.playsoftware.j2meloader.config.ShaderImporter.importFiles(this, uris, this::showShaderChooser);
 				}
 			});
 	private final androidx.activity.result.ActivityResultLauncher<Uri> pickShaderFolder =
 			registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree(), uri -> {
 				if (uri != null) {
-					ru.playsoftware.j2meloader.config.ShaderImporter.importTree(this, uri);
+					ru.playsoftware.j2meloader.config.ShaderImporter.importTree(this, uri, this::showShaderChooser);
 				}
 			});
 
@@ -489,16 +489,91 @@ public class MicroActivity extends AppCompatActivity {
 	private void showShaderImportDialog() {
 		new AlertDialog.Builder(this)
 				.setTitle(R.string.menu_import_shaders)
-				.setItems(new String[]{getString(R.string.shaders_pick_folder), getString(R.string.shaders_pick_files)},
-						(d, which) -> {
-							if (which == 0) {
-								pickShaderFolder.launch(null);
-							} else {
-								pickShaderFiles.launch(new String[]{"*/*"});
-							}
-						})
+				.setItems(new String[]{
+						getString(R.string.shaders_choose_for_game),
+						getString(R.string.shaders_pick_folder),
+						getString(R.string.shaders_pick_files)
+				}, (d, which) -> {
+					if (which == 0) {
+						showShaderChooser();
+					} else if (which == 1) {
+						pickShaderFolder.launch(null);
+					} else {
+						pickShaderFiles.launch(new String[]{"*/*"});
+					}
+				})
 				.setNegativeButton(android.R.string.cancel, null)
 				.show();
+	}
+
+	/** Lista os shaders da pasta e aplica o escolhido no jogo na hora (e salva na config do jogo). */
+	private void showShaderChooser() {
+		final ru.playsoftware.j2meloader.config.ProfileModel settings = Canvas.getSettings();
+		if (settings == null) {
+			return;
+		}
+		final Toast loading = Toast.makeText(this, R.string.shaders_loading, Toast.LENGTH_SHORT);
+		loading.show();
+		new Thread(() -> {
+			final java.util.ArrayList<ru.playsoftware.j2meloader.config.ShaderInfo> list =
+					ru.playsoftware.j2meloader.config.ShaderCatalog.load(this,
+							ru.playsoftware.j2meloader.config.ShaderCatalog.dir());
+			runOnUiThread(() -> {
+				loading.cancel();
+				if (isFinishing()) {
+					return;
+				}
+				if (list.size() <= 1) {
+					Toast.makeText(this, R.string.shaders_none_found, Toast.LENGTH_LONG).show();
+					return;
+				}
+				int checked = settings.shader == null ? 0 : list.indexOf(settings.shader);
+				if (checked < 0) {
+					checked = 0;
+				}
+				String[] names = new String[list.size()];
+				for (int i = 0; i < names.length; i++) {
+					names[i] = list.get(i).toString();
+				}
+				new AlertDialog.Builder(this)
+						.setTitle(R.string.shaders_choose_for_game)
+						.setSingleChoiceItems(names,
+								checked, (dialog, which) -> {
+									dialog.dismiss();
+									applyShader(settings, list.get(which), which == 0);
+								})
+						.setNegativeButton(android.R.string.cancel, null)
+						.show();
+			});
+		}, "ShaderList").start();
+	}
+
+	private void applyShader(ru.playsoftware.j2meloader.config.ProfileModel settings,
+							 ru.playsoftware.j2meloader.config.ShaderInfo shader, boolean none) {
+		if (none) {
+			settings.shader = null;
+		} else {
+			ru.playsoftware.j2meloader.config.ShaderCatalog.ensureDefaultValues(shader);
+			if (settings.shader != null && settings.shader.equals(shader) && settings.shader.values != null) {
+				shader.values = settings.shader.values;
+			}
+			shader.dir = Config.getEmulatorDir() + Config.SHADERS_DIR;
+			settings.shader = shader;
+		}
+		boolean saved = settings.dir != null
+				&& ru.playsoftware.j2meloader.config.ProfilesManager.saveConfig(settings);
+		if (current instanceof Canvas canvas) {
+			canvas.applyShader();
+		}
+		String name = none ? getString(R.string.identity_filter) : shader.toString();
+		StringBuilder msg = new StringBuilder(getString(R.string.shaders_applied, name));
+		if (settings.graphicsMode != 1) {
+			msg.append('\n').append(getString(R.string.shaders_need_gles));
+		}
+		if (!saved) {
+			msg.append('\n').append(getString(R.string.shaders_save_failed));
+		}
+		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
 	}
 
 	private void lockOrientation() {

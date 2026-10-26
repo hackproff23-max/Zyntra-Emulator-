@@ -994,15 +994,25 @@ public class VirtualKeyboard implements Overlay, Runnable {
 		RectF r = getAnalogRect();
 		boolean pressed = analogPointer != -1;
 		int a = pressed ? 0xFF : settings.vkAlpha;
-		g.setFillColor((a << 24) | settings.vkBgColor);
-		g.setDrawColor((a << 24) | settings.vkOutlineColor);
-		g.fillArc(r, 0, 360);
-		g.drawArc(r, 0, 360);
+		Bitmap baseImg = images != null ? images.getAnalogBase(pressed) : null;
+		Bitmap knobImg = images != null ? images.getAnalogKnob(pressed) : null;
+		if (baseImg != null) {
+			g.drawKeyBitmap(baseImg, r, a, false);
+		} else {
+			g.setFillColor((a << 24) | settings.vkBgColor);
+			g.setDrawColor((a << 24) | settings.vkOutlineColor);
+			g.fillArc(r, 0, 360);
+			g.drawArc(r, 0, 360);
+		}
 		float radius = r.width() / 2f;
 		float kr = radius * 0.42f;
 		float kx = r.centerX() + analogKnobDx;
 		float ky = r.centerY() + analogKnobDy;
 		analogKnobRect.set(kx - kr, ky - kr, kx + kr, ky + kr);
+		if (knobImg != null) {
+			g.drawKeyBitmap(knobImg, analogKnobRect, a, false);
+			return;
+		}
 		g.setFillColor((a << 24) | (pressed ? settings.vkBgColorSelected : settings.vkFgColor));
 		g.fillArc(analogKnobRect, 0, 360);
 		g.drawArc(analogKnobRect, 0, 360);

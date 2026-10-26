@@ -179,6 +179,20 @@ public abstract class Canvas extends Displayable {
 		screenshotRawMode = enable;
 	}
 
+	public static ProfileModel getSettings() {
+		return settings;
+	}
+
+	/**
+	 * Aplica o shader atual de {@link #getSettings()} nesta tela imediatamente, sem reiniciar
+	 * o jogo. So tem efeito no modo grafico OpenGL ES.
+	 */
+	public void applyShader() {
+		if (renderer != null) {
+			renderer.reloadShader();
+		}
+	}
+
 	public static void setSettings(ProfileModel settings) {
 		Canvas.settings = settings;
 		fpsLimit = settings.fpsLimit;
@@ -738,6 +752,8 @@ public abstract class Canvas extends Displayable {
 		private final int[] bgTextureId = new int[1];
 		private ShaderProgram program;
 		private boolean isStarted;
+		private int surfaceWidth;
+		private int surfaceHeight;
 
 		@Override
 		public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -758,6 +774,8 @@ public abstract class Canvas extends Displayable {
 
 		@Override
 		public void onSurfaceChanged(GL10 gl, int width, int height) {
+			surfaceWidth = width;
+			surfaceHeight = height;
 			glViewport(0, 0, width, height);
 			SkinLayer skinLayer = SkinLayer.getInstance();
 			int p = skinLayer != null && skinLayer.hasDisplayFrame() ? 0 : settings.screenPadding;
@@ -780,6 +798,43 @@ public abstract class Canvas extends Displayable {
 			if (fpsCounter != null) {
 				fpsCounter.increment();
 			}
+		}
+
+		/** Troca o programa de shader em tempo de execucao (a tela continua rodando). */
+		void reloadShader() {
+			GLSurfaceView view = mView;
+			if (view == null || !isStarted) {
+				return;
+			}
+			view.queueEvent(() -> {
+				ShaderProgram old = program;
+				ShaderProgram created;
+				try {
+					created = new ShaderProgram(settings.shader);
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+					return;
+				}
+				program = created;
+				glUniform1i(created.uTextureUnit, 0);
+				Bitmap bitmap = offscreenCopy.getBitmap();
+				synchronized (vbo) {
+					created.loadVbo(vbo, bitmap.getWidth(), bitmap.getHeight());
+				}
+				if (settings.shader != null && settings.shader.values != null && created.uSetting >= 0) {
+					glUniform4fv(created.uSetting, 1, settings.shader.values, 0);
+				}
+				if (surfaceWidth > 0 && surfaceHeight > 0) {
+					if (created.uPixelDelta >= 0) {
+						glUniform2f(created.uPixelDelta, 1.0f / surfaceWidth, 1.0f / surfaceHeight);
+					}
+					created.setOutputSize(surfaceWidth, surfaceHeight);
+				}
+				if (old != null) {
+					old.release();
+				}
+				view.requestRender();
+			});
 		}
 
 		private void initTex() {

@@ -34,6 +34,8 @@ public class ShaderProgram {
 	private static final String VERTEX = "shaders/simple.vsh";
 	private static final String FRAGMENT = "shaders/simple.fsh";
 
+	private int programId = -1;
+
 	public int aTexCoord;
 	public int uTextureUnit;
 	public int aPosition;
@@ -56,7 +58,8 @@ public class ShaderProgram {
 				String fragmentCode = FileUtils.getText(shader.dir + fragment);
 				vertexCode = prepare(vertexCode, "VERTEX");
 				fragmentCode = prepare(fragmentCode, "FRAGMENT");
-				if (createProgram(vertexCode, fragmentCode) != -1) {
+				programId = createProgram(vertexCode, fragmentCode);
+				if (programId != -1) {
 					glReleaseShaderCompiler();
 					return;
 				}
@@ -66,6 +69,7 @@ public class ShaderProgram {
 		String vertexCode = ContextHolder.getAssetAsString(VERTEX);
 		String fragmentCode = ContextHolder.getAssetAsString(FRAGMENT);
 		int program = createProgram(vertexCode, fragmentCode);
+		programId = program;
 		glReleaseShaderCompiler();
 		if (program == -1) {
 			throw new RuntimeException("Init shader program error: see log for detail");
@@ -99,6 +103,14 @@ public class ShaderProgram {
 			if (l >= 0) return l;
 		}
 		return -1;
+	}
+
+	/** Libera o programa GL (chamar na thread do GL, depois de trocar para outro programa). */
+	public void release() {
+		if (programId > 0) {
+			glDeleteProgram(programId);
+		}
+		programId = -1;
 	}
 
 	public void setOutputSize(float width, float height) {

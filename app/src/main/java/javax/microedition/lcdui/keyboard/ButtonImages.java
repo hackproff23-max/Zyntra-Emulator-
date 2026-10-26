@@ -20,6 +20,9 @@ import ru.playsoftware.j2meloader.config.Config;
 public final class ButtonImages {
 	public static final String DIR = "/buttons/";
 	public static final String SLOT_ALL = "all";
+	/** Fundo (circulo) e bolinha do botao analogico. */
+	public static final String SLOT_ANALOG_BASE = "analog_base";
+	public static final String SLOT_ANALOG_KNOB = "analog_knob";
 
 	/** Nomes de arquivo, na mesma ordem dos indices KEY_* do VirtualKeyboard. */
 	public static final String[] KEY_SLOTS = {
@@ -39,6 +42,10 @@ public final class ButtonImages {
 
 	private final Bitmap[] normal = new Bitmap[KEY_SLOTS.length];
 	private final Bitmap[] pressed = new Bitmap[KEY_SLOTS.length];
+	private Bitmap analogBase;
+	private Bitmap analogBasePressed;
+	private Bitmap analogKnob;
+	private Bitmap analogKnobPressed;
 	private boolean any;
 
 	private ButtonImages() {
@@ -58,6 +65,24 @@ public final class ButtonImages {
 				any = true;
 			}
 		}
+		analogBase = decode(file(SLOT_ANALOG_BASE, false), maxSize * 2);
+		analogBasePressed = decode(file(SLOT_ANALOG_BASE, true), maxSize * 2);
+		analogKnob = decode(file(SLOT_ANALOG_KNOB, false), maxSize);
+		analogKnobPressed = decode(file(SLOT_ANALOG_KNOB, true), maxSize);
+		if (analogBase != null || analogKnob != null
+				|| analogBasePressed != null || analogKnobPressed != null) {
+			any = true;
+		}
+	}
+
+	/** Imagem do fundo do analogico, ou null para usar o desenho padrao. */
+	public Bitmap getAnalogBase(boolean pressed) {
+		return pressed && analogBasePressed != null ? analogBasePressed : analogBase;
+	}
+
+	/** Imagem da bolinha do analogico, ou null para usar o desenho padrao. */
+	public Bitmap getAnalogKnob(boolean pressed) {
+		return pressed && analogKnobPressed != null ? analogKnobPressed : analogKnob;
 	}
 
 	/** Returns null when there are no images to use. */

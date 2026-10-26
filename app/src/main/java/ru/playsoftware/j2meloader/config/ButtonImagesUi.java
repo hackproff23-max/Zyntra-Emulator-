@@ -21,15 +21,21 @@ public final class ButtonImagesUi {
 
 	public static void showSlots(Context context, Picker picker) {
 		int n = ButtonImages.KEY_SLOTS.length;
-		String[] slots = new String[n + 1];
-		String[] items = new String[n + 1];
+		// 0 = todos, 1 = fundo do analogico, 2 = bolinha do analogico, depois cada botao
+		int extra = 3;
+		String[] slots = new String[n + extra];
+		String[] items = new String[n + extra];
 		slots[0] = ButtonImages.SLOT_ALL;
 		items[0] = context.getString(R.string.vk_img_all);
+		slots[1] = ButtonImages.SLOT_ANALOG_BASE;
+		items[1] = context.getString(R.string.vk_img_analog_base);
+		slots[2] = ButtonImages.SLOT_ANALOG_KNOB;
+		items[2] = context.getString(R.string.vk_img_analog_knob);
 		for (int i = 0; i < n; i++) {
-			slots[i + 1] = ButtonImages.KEY_SLOTS[i];
-			items[i + 1] = ButtonImages.KEY_LABELS[i];
+			slots[i + extra] = ButtonImages.KEY_SLOTS[i];
+			items[i + extra] = ButtonImages.KEY_LABELS[i];
 		}
-		for (int i = 0; i <= n; i++) {
+		for (int i = 0; i < slots.length; i++) {
 			if (ButtonImagesManager.has(slots[i], false) || ButtonImagesManager.has(slots[i], true)) {
 				items[i] += "  ✓";
 			}

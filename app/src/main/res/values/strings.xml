@@ -287,6 +287,12 @@
     <string name="shaders_import_error">Could not import the shader files</string>
     <string name="shaders_pick_folder">Select a folder (recommended)</string>
     <string name="shaders_pick_files">Select files</string>
+    <string name="shaders_choose_for_game">Select shader for this game (apply now)</string>
+    <string name="shaders_loading">Loading shaders…</string>
+    <string name="shaders_none_found">No shaders found. Import a folder or files first.</string>
+    <string name="shaders_applied">Shader applied: %1$s</string>
+    <string name="shaders_need_gles">It only shows with graphics mode OpenGL ES (change it in the game settings).</string>
+    <string name="shaders_save_failed">Could not save to the game settings.</string>
     <string name="shaders_imported_found">%1$d file(s) copied, %2$d shader(s) found</string>
     <string name="pref_outline_color_title">Outline color</string>
     <string name="pref_outline_color_summary">Pick any RGB color for the letter outline</string>
@@ -300,6 +306,8 @@
     <string name="background_removed">Background removed</string>
     <string name="pref_text_color_title">Text color</string>
     <string name="pref_text_color_summary">Pick any RGB color for the letters</string>
+    <string name="vk_img_analog_base">Analog stick: base (circle)</string>
+    <string name="vk_img_analog_knob">Analog stick: knob</string>
     <string name="vk_analog_title">Analog stick</string>
     <string name="vk_analog_on">Analog stick on</string>
     <string name="vk_analog_off">Analog stick off</string>

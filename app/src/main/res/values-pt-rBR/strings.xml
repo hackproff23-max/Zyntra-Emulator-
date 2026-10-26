@@ -226,6 +226,12 @@
     <string name="shaders_import_error">Não foi possível importar os arquivos de shader</string>
     <string name="shaders_pick_folder">Selecionar uma pasta (recomendado)</string>
     <string name="shaders_pick_files">Selecionar arquivos</string>
+    <string name="shaders_choose_for_game">Selecionar shader para este jogo (aplicar agora)</string>
+    <string name="shaders_loading">Carregando shaders…</string>
+    <string name="shaders_none_found">Nenhum shader encontrado. Importe uma pasta ou arquivos primeiro.</string>
+    <string name="shaders_applied">Shader aplicado: %1$s</string>
+    <string name="shaders_need_gles">Só aparece com o modo gráfico OpenGL ES (mude nas configurações do jogo).</string>
+    <string name="shaders_save_failed">Não foi possível salvar nas configurações do jogo.</string>
     <string name="shaders_imported_found">%1$d arquivo(s) copiado(s), %2$d shader(s) encontrado(s)</string>
     <string name="pref_outline_color_title">Cor do contorno</string>
     <string name="pref_outline_color_summary">Escolha livremente a cor (RGB) do contorno das letras</string>
@@ -238,6 +244,8 @@
     <string name="background_removed">Fundo removido</string>
     <string name="pref_text_color_title">Cor do texto</string>
     <string name="pref_text_color_summary">Escolha livremente a cor (RGB) das letras</string>
+    <string name="vk_img_analog_base">Botão analógico: fundo (círculo)</string>
+    <string name="vk_img_analog_knob">Botão analógico: bolinha</string>
     <string name="vk_analog_title">Botão analógico</string>
     <string name="vk_analog_on">Botão analógico ligado</string>
     <string name="vk_analog_off">Botão analógico desligado</string>

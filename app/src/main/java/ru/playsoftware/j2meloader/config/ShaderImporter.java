@@ -25,7 +25,16 @@ public final class ShaderImporter {
 
 	/** Copia os arquivos escolhidos (.ini, .fsh, .vsh...) e mostra o resultado. */
 	public static void importFiles(Context context, List<Uri> uris) {
-		report(context, copyFiles(context, uris));
+		importFiles(context, uris, null);
+	}
+
+	/** Igual a importFiles, mas chama onImported (na thread principal) se algo foi copiado. */
+	public static void importFiles(Context context, List<Uri> uris, Runnable onImported) {
+		int copied = copyFiles(context, uris);
+		report(context, copied);
+		if (copied > 0 && onImported != null) {
+			onImported.run();
+		}
 	}
 
 	private static int copyFiles(Context context, List<Uri> uris) {
@@ -70,6 +79,11 @@ public final class ShaderImporter {
 
 	/** Copia uma pasta inteira (com subpastas) para shaders/<nome da pasta>/ em segundo plano. */
 	public static void importTree(Activity activity, Uri treeUri) {
+		importTree(activity, treeUri, null);
+	}
+
+	/** Igual a importTree, mas chama onImported (na thread principal) se algo foi copiado. */
+	public static void importTree(Activity activity, Uri treeUri, Runnable onImported) {
 		Context appContext = activity.getApplicationContext();
 		new Thread(() -> {
 			int count = 0;
@@ -86,7 +100,12 @@ public final class ShaderImporter {
 				e.printStackTrace();
 			}
 			int copied = count;
-			activity.runOnUiThread(() -> report(activity, copied));
+			activity.runOnUiThread(() -> {
+				report(activity, copied);
+				if (copied > 0 && onImported != null) {
+					onImported.run();
+				}
+			});
 		}, "ShaderImport").start();
 	}
 

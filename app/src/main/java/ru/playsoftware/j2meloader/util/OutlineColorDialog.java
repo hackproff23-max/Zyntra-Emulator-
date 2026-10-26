@@ -20,7 +20,7 @@ public final class OutlineColorDialog {
 	private OutlineColorDialog() {
 	}
 
-	public static void show(Context context, Runnable onSaved) {
+	public static void show(Context context, boolean forText, Runnable onSaved) {
 		View v = LayoutInflater.from(context).inflate(R.layout.dialog_outline_color, null);
 		OutlinedTextView preview = v.findViewById(R.id.outline_preview);
 		SeekBar[] bars = {v.findViewById(R.id.seek_r), v.findViewById(R.id.seek_g), v.findViewById(R.id.seek_b)};
@@ -28,13 +28,17 @@ public final class OutlineColorDialog {
 		EditText hex = v.findViewById(R.id.outline_hex);
 		hex.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});
 
-		int c = OutlineSettings.getColor();
+		int c = forText ? OutlineSettings.getTextColor() : OutlineSettings.getColor();
 		final int[] rgb = {Color.red(c), Color.green(c), Color.blue(c)};
 		final boolean[] busy = {false};
 
 		Runnable refresh = () -> {
 			busy[0] = true;
-			preview.setOutlineColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
+			if (forText) {
+				preview.setFillColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
+			} else {
+				preview.setOutlineColor(Color.rgb(rgb[0], rgb[1], rgb[2]));
+			}
 			for (int i = 0; i < 3; i++) {
 				values[i].setText(String.valueOf(rgb[i]));
 				if (bars[i].getProgress() != rgb[i]) {
@@ -99,11 +103,16 @@ public final class OutlineColorDialog {
 		refresh.run();
 
 		new AlertDialog.Builder(context)
-				.setTitle(R.string.pref_outline_color_title)
+				.setTitle(forText ? R.string.pref_text_color_title : R.string.pref_outline_color_title)
 				.setView(v)
 				.setNegativeButton(android.R.string.cancel, null)
 				.setPositiveButton(android.R.string.ok, (d, w) -> {
-					OutlineSettings.save(context, Color.rgb(rgb[0], rgb[1], rgb[2]));
+					int picked = Color.rgb(rgb[0], rgb[1], rgb[2]);
+					if (forText) {
+						OutlineSettings.saveTextColor(context, picked);
+					} else {
+						OutlineSettings.save(context, picked);
+					}
 					if (onSaved != null) {
 						onSaved.run();
 					}

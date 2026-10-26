@@ -1,7 +1,6 @@
 package ru.playsoftware.j2meloader.util;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -16,6 +15,7 @@ import ru.playsoftware.j2meloader.R;
 public class OutlinedTextView extends AppCompatTextView {
 	private float outlineWidth;
 	private Integer outlineColor;
+	private Integer fillColor;
 	private boolean drawing;
 
 	public OutlinedTextView(Context context) {
@@ -44,6 +44,12 @@ public class OutlinedTextView extends AppCompatTextView {
 		invalidate();
 	}
 
+	/** Cor de preenchimento propria deste texto (usada na previa); null usa a cor global do texto. */
+	public void setFillColor(Integer color) {
+		fillColor = color;
+		invalidate();
+	}
+
 	@Override
 	public void invalidate() {
 		if (!drawing) {
@@ -53,20 +59,18 @@ public class OutlinedTextView extends AppCompatTextView {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		if (outlineWidth <= 0) {
-			super.onDraw(canvas);
-			return;
-		}
-		ColorStateList fill = getTextColors();
+		final int fill = fillColor != null ? fillColor : OutlineSettings.getTextColor();
 		TextPaint paint = getPaint();
 		drawing = true;
 		try {
-			paint.setStyle(Paint.Style.STROKE);
-			paint.setStrokeWidth(outlineWidth);
-			paint.setStrokeJoin(Paint.Join.ROUND);
-			setTextColor(outlineColor != null ? outlineColor : OutlineSettings.getColor());
-			super.onDraw(canvas);
-			paint.setStyle(Paint.Style.FILL);
+			if (outlineWidth > 0) {
+				paint.setStyle(Paint.Style.STROKE);
+				paint.setStrokeWidth(outlineWidth);
+				paint.setStrokeJoin(Paint.Join.ROUND);
+				setTextColor(outlineColor != null ? outlineColor : OutlineSettings.getColor());
+				super.onDraw(canvas);
+				paint.setStyle(Paint.Style.FILL);
+			}
 			setTextColor(fill);
 		} finally {
 			drawing = false;

@@ -71,7 +71,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 		Preference prefOutline = findPreference(OutlineSettings.PREF_KEY);
 		if (prefOutline != null) {
 			prefOutline.setOnPreferenceClickListener(preference -> {
-				OutlineColorDialog.show(requireContext(), null);
+				OutlineColorDialog.show(requireContext(), false, null);
+				return true;
+			});
+		}
+		Preference prefText = findPreference(OutlineSettings.PREF_TEXT_KEY);
+		if (prefText != null) {
+			prefText.setOnPreferenceClickListener(preference -> {
+				OutlineColorDialog.show(requireContext(), true, null);
 				return true;
 			});
 		}

@@ -9,6 +9,12 @@
         android:summary="@string/pref_outline_color_summary"
         android:title="@string/pref_outline_color_title" />
     <Preference
+        android:icon="@drawable/ic_menu_letters"
+        android:key="pref_text_color"
+        app:persistent="false"
+        android:summary="@string/pref_text_color_summary"
+        android:title="@string/pref_text_color_title" />
+    <Preference
         android:icon="@drawable/ic_menu_png"
         android:key="pref_background_import"
         app:persistent="false"

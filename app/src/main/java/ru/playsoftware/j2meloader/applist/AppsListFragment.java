@@ -78,6 +78,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.disposables.Disposable;
 import ru.playsoftware.j2meloader.R;
+import ru.playsoftware.j2meloader.util.BackgroundManager;
 import ru.playsoftware.j2meloader.util.OutlineSettings;
 import ru.playsoftware.j2meloader.config.ButtonImagesManager;
 import ru.playsoftware.j2meloader.config.ButtonImagesUi;
@@ -536,7 +537,9 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 		}
 		android.util.TypedValue tv = new android.util.TypedValue();
 		activity.getTheme().resolveAttribute(android.R.attr.colorBackground, tv, true);
-		popup.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(tv.data));
+		android.graphics.drawable.Drawable popupBg = BackgroundManager.createDrawable(activity, BackgroundManager.DIM_POPUP);
+		popup.setBackgroundDrawable(popupBg != null ? popupBg
+				: new android.graphics.drawable.ColorDrawable(tv.data));
 		gridMenu = popup;
 		content.findViewById(R.id.menu_settings).setOnClickListener(v -> {
 			popup.dismiss();

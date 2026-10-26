@@ -90,6 +90,7 @@ public class EmulatorApplication extends Application implements OnSharedPreferen
 		@Override
 		public void onActivityCreated(@NonNull Activity a, Bundle savedInstanceState) {
 			hideSystemBars(a);
+			ru.playsoftware.j2meloader.util.BackgroundManager.applyTo(a);
 			// as barras voltam depois de dialogos/teclado: esconde de novo quando a tela ganha foco
 			a.getWindow().getDecorView().getViewTreeObserver()
 					.addOnWindowFocusChangeListener(hasFocus -> {
@@ -102,6 +103,7 @@ public class EmulatorApplication extends Application implements OnSharedPreferen
 		@Override
 		public void onActivityResumed(@NonNull Activity a) {
 			hideSystemBars(a);
+			ru.playsoftware.j2meloader.util.BackgroundManager.applyTo(a);
 		}
 
 		@Override

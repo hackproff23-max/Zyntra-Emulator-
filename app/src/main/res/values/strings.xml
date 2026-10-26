@@ -292,4 +292,10 @@
     <string name="pref_outline_color_summary">Pick any RGB color for the letter outline</string>
     <string name="outline_hex_label">Hex code (RRGGBB)</string>
     <string name="toolbar_title" translatable="false">ArixJar Emu</string>
+    <string name="pref_background_import_title">Import PNG as general background</string>
+    <string name="pref_background_import_summary">Choose an image for the app background</string>
+    <string name="pref_background_remove_title">Remove background image</string>
+    <string name="background_applied">Background applied</string>
+    <string name="background_error">Could not use this image</string>
+    <string name="background_removed">Background removed</string>
 </resources>

@@ -27,8 +27,10 @@ import android.content.res.XmlResourceParser;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.os.LocaleListCompat;
@@ -44,6 +46,7 @@ import ru.playsoftware.j2meloader.EmulatorApplication;
 import ru.playsoftware.j2meloader.R;
 import ru.playsoftware.j2meloader.config.Config;
 import ru.playsoftware.j2meloader.config.ProfilesActivity;
+import ru.playsoftware.j2meloader.util.BackgroundManager;
 import ru.playsoftware.j2meloader.util.FileUtils;
 import ru.playsoftware.j2meloader.util.OutlineColorDialog;
 import ru.playsoftware.j2meloader.util.OutlineSettings;
@@ -54,6 +57,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 	private static final String TAG = "SettingsFragment";
 
 	private Preference prefFolder;
+	private final ActivityResultLauncher<String> pickBackground = registerForActivityResult(
+			new ActivityResultContracts.GetContent(), this::onPickBackgroundResult);
 	private final ActivityResultLauncher<String> openDirLauncher = registerForActivityResult(
 			new PickDirResultContract(),
 			this::onPickDirResult);
@@ -63,11 +68,26 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 		addPreferencesFromResource(R.xml.preferences);
 		Objects.<Preference>requireNonNull(findPreference("pref_default_settings"))
 				.setIntent(new Intent(requireActivity(), ProfilesActivity.class));
-		initLanguages();
 		Preference prefOutline = findPreference(OutlineSettings.PREF_KEY);
 		if (prefOutline != null) {
 			prefOutline.setOnPreferenceClickListener(preference -> {
 				OutlineColorDialog.show(requireContext(), null);
+				return true;
+			});
+		}
+		Preference prefBgImport = findPreference("pref_background_import");
+		if (prefBgImport != null) {
+			prefBgImport.setOnPreferenceClickListener(preference -> {
+				pickBackground.launch("image/*");
+				return true;
+			});
+		}
+		Preference prefBgRemove = findPreference("pref_background_remove");
+		if (prefBgRemove != null) {
+			prefBgRemove.setOnPreferenceClickListener(preference -> {
+				BackgroundManager.remove(requireContext());
+				BackgroundManager.applyTo(requireActivity());
+				Toast.makeText(requireContext(), R.string.background_removed, Toast.LENGTH_SHORT).show();
 				return true;
 			});
 		}
@@ -113,6 +133,24 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 			AppCompatDelegate.setApplicationLocales(list);
 			return true;
 		});
+	}
+
+	private void onPickBackgroundResult(Uri uri) {
+		if (uri == null) {
+			return;
+		}
+		final Context appContext = requireContext().getApplicationContext();
+		final androidx.fragment.app.FragmentActivity activity = requireActivity();
+		new Thread(() -> {
+			boolean ok = BackgroundManager.importFrom(appContext, uri);
+			activity.runOnUiThread(() -> {
+				if (ok) {
+					BackgroundManager.applyTo(activity);
+				}
+				Toast.makeText(activity, ok ? R.string.background_applied : R.string.background_error,
+						Toast.LENGTH_SHORT).show();
+			});
+		}).start();
 	}
 
 	private void onPickDirResult(Uri uri) {

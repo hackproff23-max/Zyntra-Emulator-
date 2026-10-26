@@ -182,4 +182,10 @@
     <string name="pref_outline_color_title">Cor do contorno</string>
     <string name="pref_outline_color_summary">Escolha livremente a cor (RGB) do contorno das letras</string>
     <string name="outline_hex_label">Código hexadecimal (RRGGBB)</string>
+    <string name="pref_background_import_title">Importar PNG de fundo geral</string>
+    <string name="pref_background_import_summary">Escolha uma imagem para o fundo do app</string>
+    <string name="pref_background_remove_title">Remover imagem de fundo</string>
+    <string name="background_applied">Fundo aplicado</string>
+    <string name="background_error">Não foi possível usar essa imagem</string>
+    <string name="background_removed">Fundo removido</string>
 </resources>

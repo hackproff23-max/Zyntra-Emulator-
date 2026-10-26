@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="280dp"
     android:layout_height="wrap_content"
     android:columnCount="2"
@@ -23,6 +24,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:importantForAccessibility="no"
+            android:tint="#FFFFFF"
+            app:tint="#FFFFFF"
             android:src="@drawable/ic_menu_settings" />
 
         <TextView
@@ -31,7 +34,8 @@
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:text="@string/action_settings"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <LinearLayout
@@ -51,6 +55,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:importantForAccessibility="no"
+            android:tint="#FFFFFF"
+            app:tint="#FFFFFF"
             android:src="@drawable/ic_menu_letters" />
 
         <TextView
@@ -59,7 +65,8 @@
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:text="@string/menu_letters"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <LinearLayout
@@ -79,6 +86,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:importantForAccessibility="no"
+            android:tint="#FFFFFF"
+            app:tint="#FFFFFF"
             android:src="@drawable/ic_menu_profiles" />
 
         <TextView
@@ -87,7 +96,8 @@
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:text="@string/menu_profiles_editor"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <LinearLayout
@@ -107,6 +117,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:importantForAccessibility="no"
+            android:tint="#FFFFFF"
+            app:tint="#FFFFFF"
             android:src="@drawable/ic_menu_shaders" />
 
         <TextView
@@ -115,7 +127,8 @@
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:text="@string/menu_import_shaders"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <LinearLayout
@@ -135,6 +148,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:importantForAccessibility="no"
+            android:tint="#FFFFFF"
+            app:tint="#FFFFFF"
             android:src="@drawable/ic_menu_png" />
 
         <TextView
@@ -143,7 +158,8 @@
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:text="@string/menu_import_png"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
     <LinearLayout
@@ -163,6 +179,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:importantForAccessibility="no"
+            android:tint="#FFFFFF"
+            app:tint="#FFFFFF"
             android:src="@drawable/ic_menu_exit" />
 
         <TextView
@@ -171,6 +189,7 @@
             android:layout_marginTop="6dp"
             android:gravity="center"
             android:text="@string/exit"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 </GridLayout>

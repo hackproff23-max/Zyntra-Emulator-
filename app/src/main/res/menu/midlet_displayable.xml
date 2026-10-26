@@ -3,13 +3,11 @@
         android:id="@+id/action_exit_midlet"
         android:title="@string/exit" />
     <item
-        android:id="@+id/action_save_log"
-        android:title="@string/save_log" />
+        android:id="@+id/action_letters"
+        android:title="@string/menu_letters" />
     <item
-        android:id="@+id/action_lock_orientation"
-        android:title="@string/action_lock_orientation"
-        android:checkable="true"
-        android:checked="false" />
+        android:id="@+id/action_shaders"
+        android:title="@string/menu_import_shaders" />
     <group android:id="@+id/action_group_canvas">
         <item
             android:icon="@drawable/ic_action_keyboard"
@@ -38,8 +36,8 @@
                     android:id="@+id/action_layout_edit_finish"
                     android:title="@string/layout_edit_finish" />
                 <item
-                    android:id="@+id/action_layout_switch"
-                    android:title="@string/layout_switch" />
+                    android:id="@+id/action_import_png"
+                    android:title="@string/menu_import_png" />
                 <item
                     android:id="@+id/action_hide_buttons"
                     android:title="@string/hide_buttons" />

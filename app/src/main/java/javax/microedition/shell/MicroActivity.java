@@ -429,18 +429,10 @@ public class MicroActivity extends AppCompatActivity {
 		int id = item.getItemId();
 		if (id == R.id.action_exit_midlet) {
 			showExitConfirmation();
-		} else if (id == R.id.action_save_log) {
-			saveLog();
-		} else if (id == R.id.action_lock_orientation) {
-			if (item.isChecked()) {
-				VirtualKeyboard vk = ContextHolder.getVk();
-				int orientation = vk != null && vk.isPhone() ? ORIENTATION_PORTRAIT : microLoader.getOrientation();
-				setOrientation(orientation);
-				item.setChecked(false);
-			} else {
-				lockOrientation();
-				item.setChecked(true);
-			}
+		} else if (id == R.id.action_letters) {
+			ru.playsoftware.j2meloader.config.LettersDialog.show(this);
+		} else if (id == R.id.action_shaders) {
+			showShaderImportDialog();
 		} else if (id == R.id.action_ime_keyboard) {
 			inputMethodManager.toggleSoftInputFromWindow(binding.displayableContainer.getWindowToken(),
 					InputMethodManager.SHOW_FORCED, 0);
@@ -453,6 +445,59 @@ public class MicroActivity extends AppCompatActivity {
 			handleVkOptions(id);
 		}
 		return true;
+	}
+
+	private String pendingImageSlot;
+	private boolean pendingImagePressed;
+	private final androidx.activity.result.ActivityResultLauncher<String> pickButtonImage =
+			registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.GetContent(), uri -> {
+				if (uri == null || pendingImageSlot == null) {
+					return;
+				}
+				int result = ru.playsoftware.j2meloader.config.ButtonImagesManager
+						.importPng(this, uri, pendingImageSlot, pendingImagePressed);
+				int msg = result == ru.playsoftware.j2meloader.config.ButtonImagesManager.OK ? R.string.vk_img_imported
+						: result == ru.playsoftware.j2meloader.config.ButtonImagesManager.ERR_STORAGE
+						? R.string.vk_img_storage_error : R.string.vk_img_invalid;
+				Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+				if (result == ru.playsoftware.j2meloader.config.ButtonImagesManager.OK) {
+					showButtonImages();
+				}
+			});
+	private final androidx.activity.result.ActivityResultLauncher<String[]> pickShaderFiles =
+			registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.OpenMultipleDocuments(), uris -> {
+				if (uris != null && !uris.isEmpty()) {
+					ru.playsoftware.j2meloader.config.ShaderImporter.importFiles(this, uris);
+				}
+			});
+	private final androidx.activity.result.ActivityResultLauncher<Uri> pickShaderFolder =
+			registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree(), uri -> {
+				if (uri != null) {
+					ru.playsoftware.j2meloader.config.ShaderImporter.importTree(this, uri);
+				}
+			});
+
+	private void showButtonImages() {
+		ru.playsoftware.j2meloader.config.ButtonImagesUi.showSlots(this, (slot, pressed) -> {
+			pendingImageSlot = slot;
+			pendingImagePressed = pressed;
+			pickButtonImage.launch("image/*");
+		});
+	}
+
+	private void showShaderImportDialog() {
+		new AlertDialog.Builder(this)
+				.setTitle(R.string.menu_import_shaders)
+				.setItems(new String[]{getString(R.string.shaders_pick_folder), getString(R.string.shaders_pick_files)},
+						(d, which) -> {
+							if (which == 0) {
+								pickShaderFolder.launch(null);
+							} else {
+								pickShaderFiles.launch(new String[]{"*/*"});
+							}
+						})
+				.setNegativeButton(android.R.string.cancel, null)
+				.show();
 	}
 
 	private void lockOrientation() {
@@ -500,8 +545,8 @@ public class MicroActivity extends AppCompatActivity {
 			vk.setLayoutEditMode(VirtualKeyboard.LAYOUT_EOF);
 			Toast.makeText(this, R.string.layout_edit_finished, Toast.LENGTH_SHORT).show();
 			showSaveVkAlert(false);
-		} else if (id == R.id.action_layout_switch) {
-			showSetLayoutDialog();
+		} else if (id == R.id.action_import_png) {
+			showButtonImages();
 		} else if (id == R.id.action_hide_buttons) {
 			showHideButtonDialog();
 		}

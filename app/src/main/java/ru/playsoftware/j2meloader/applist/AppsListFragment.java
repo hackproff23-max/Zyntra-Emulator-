@@ -78,6 +78,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.disposables.Disposable;
 import ru.playsoftware.j2meloader.R;
+import ru.playsoftware.j2meloader.util.OutlineSettings;
 import ru.playsoftware.j2meloader.config.ButtonImagesManager;
 import ru.playsoftware.j2meloader.config.ButtonImagesUi;
 import ru.playsoftware.j2meloader.config.Config;
@@ -171,6 +172,17 @@ public class AppsListFragment extends Fragment implements MenuProvider, AppsList
 			},
 			this::onActivityResult);
 	private final AppsListAdapter adapter = new AppsListAdapter(this);
+	private int outlineVersion = OutlineSettings.getVersion();
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		int v = OutlineSettings.getVersion();
+		if (v != outlineVersion) {
+			outlineVersion = v;
+			adapter.notifyDataSetChanged();
+		}
+	}
 	private Uri appUri;
 	private SharedPreferences preferences;
 	private AppListModel appListViewModel;

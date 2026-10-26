@@ -4,4 +4,7 @@
     <attr name="textColorSecondary" format="color" />
     <attr name="bg_config_card" format="reference" />
     <attr name="bg_button" format="reference" />
+    <declare-styleable name="OutlinedTextView">
+        <attr name="outlineWidth" format="dimension" />
+    </declare-styleable>
 </resources>

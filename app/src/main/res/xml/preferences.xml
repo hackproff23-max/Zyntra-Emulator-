@@ -10,6 +10,12 @@
         android:key="pref_theme"
         app:useSimpleSummaryProvider="true"
         android:title="@string/pref_theme_title" />
+    <Preference
+        android:icon="@drawable/ic_setting_theme"
+        android:key="pref_outline_color"
+        app:persistent="false"
+        android:summary="@string/pref_outline_color_summary"
+        android:title="@string/pref_outline_color_title" />
     <ListPreference
         android:icon="@drawable/ic_setting_translate"
         android:key="pref_language"

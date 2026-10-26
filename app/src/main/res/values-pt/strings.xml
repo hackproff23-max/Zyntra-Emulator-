@@ -179,4 +179,7 @@
     <string name="shaders_pick_folder">Selecionar uma pasta (recomendado)</string>
     <string name="shaders_pick_files">Selecionar arquivos</string>
     <string name="shaders_imported_found">%1$d arquivo(s) copiado(s), %2$d shader(s) encontrado(s)</string>
+    <string name="pref_outline_color_title">Cor do contorno</string>
+    <string name="pref_outline_color_summary">Escolha livremente a cor (RGB) do contorno das letras</string>
+    <string name="outline_hex_label">Código hexadecimal (RRGGBB)</string>
 </resources>

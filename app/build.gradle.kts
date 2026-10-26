@@ -24,7 +24,7 @@ android {
         targetSdk = rootProject.extra["targetSdk"] as Int
         versionCode = 48
         versionName = "0.87.1"
-        resValue("string", "app_name", "Zyntra Emulator")
+        resValue("string", "app_name", "ArixJar Emu")
         resValue("string", "app_center", secret.getProperty("appCenterKey", ""))
         resValue("string", "fingerprint", secret.getProperty("fingerprint", ""))
         // Somente armeabi-v7a (32-bit ARM): compila so as libs nativas desse ABI
@@ -103,7 +103,7 @@ android {
 
     applicationVariants.configureEach {
         if (buildType.name == "debug" && flavorName == "emulator") {
-            resValue("string", "app_name", "Zyntra Debug")
+            resValue("string", "app_name", "ArixJar Emu Debug")
         }
         outputs.configureEach {
             if (this is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {

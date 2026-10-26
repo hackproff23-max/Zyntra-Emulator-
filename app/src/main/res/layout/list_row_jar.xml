@@ -27,7 +27,7 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <TextView
+        <ru.playsoftware.j2meloader.util.OutlinedTextView
             android:id="@+id/list_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -36,6 +36,7 @@
             android:fontFamily="@font/app_bold"
             app:fontFamily="@font/app_bold"
             android:maxLines="1"
+            app:outlineWidth="3dp"
             android:textSize="15sp"
             tools:text="Example MIDlet Name" />
 

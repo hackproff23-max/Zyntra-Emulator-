@@ -288,4 +288,8 @@
     <string name="shaders_pick_folder">Select a folder (recommended)</string>
     <string name="shaders_pick_files">Select files</string>
     <string name="shaders_imported_found">%1$d file(s) copied, %2$d shader(s) found</string>
+    <string name="pref_outline_color_title">Outline color</string>
+    <string name="pref_outline_color_summary">Pick any RGB color for the letter outline</string>
+    <string name="outline_hex_label">Hex code (RRGGBB)</string>
+    <string name="toolbar_title" translatable="false">ArixJar Emu</string>
 </resources>

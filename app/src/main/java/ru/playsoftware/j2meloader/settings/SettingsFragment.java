@@ -45,6 +45,8 @@ import ru.playsoftware.j2meloader.R;
 import ru.playsoftware.j2meloader.config.Config;
 import ru.playsoftware.j2meloader.config.ProfilesActivity;
 import ru.playsoftware.j2meloader.util.FileUtils;
+import ru.playsoftware.j2meloader.util.OutlineColorDialog;
+import ru.playsoftware.j2meloader.util.OutlineSettings;
 import ru.playsoftware.j2meloader.util.PickDirResultContract;
 import ru.playsoftware.j2meloader.util.XmlUtils;
 
@@ -62,6 +64,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 		Objects.<Preference>requireNonNull(findPreference("pref_default_settings"))
 				.setIntent(new Intent(requireActivity(), ProfilesActivity.class));
 		initLanguages();
+		Preference prefOutline = findPreference(OutlineSettings.PREF_KEY);
+		if (prefOutline != null) {
+			prefOutline.setOnPreferenceClickListener(preference -> {
+				OutlineColorDialog.show(requireContext(), null);
+				return true;
+			});
+		}
 		prefFolder = Objects.requireNonNull(findPreference(PREF_EMULATOR_DIR));
 		prefFolder.setSummary(Config.getEmulatorDir());
 		prefFolder.setOnPreferenceClickListener(preference -> {

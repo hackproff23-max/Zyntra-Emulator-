@@ -85,6 +85,15 @@ public class MainActivity extends AppCompatActivity {
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 	}
 
+	@Override
+	protected void onResume() {
+		super.onResume();
+		View title = findViewById(R.id.toolbar_title);
+		if (title != null) {
+			title.invalidate();
+		}
+	}
+
 	/** Barra compacta colada no topo (por baixo do notch); so as laterais/rodape respeitam o sistema. */
 	private void applyInsets(View root, Toolbar toolbar) {
 		final int barHeight = Math.round(44 * getResources().getDisplayMetrics().density);

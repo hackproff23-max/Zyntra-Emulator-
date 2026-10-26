@@ -41,6 +41,7 @@ import ru.playsoftware.j2meloader.crashes.AppCenterCollector;
 import ru.playsoftware.j2meloader.crashes.AppCenterSender;
 import ru.playsoftware.j2meloader.util.Constants;
 import ru.playsoftware.j2meloader.util.FileUtils;
+import ru.playsoftware.j2meloader.util.OutlineSettings;
 
 public class EmulatorApplication extends Application implements OnSharedPreferenceChangeListener {
 	private static EmulatorApplication instance;
@@ -63,6 +64,7 @@ public class EmulatorApplication extends Application implements OnSharedPreferen
 				.withPluginConfigurations(AppCenterSender.buildHttpSenderConfiguration(this)));
 
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		OutlineSettings.load(this);
 		if (!sp.contains(Constants.PREF_TOOLBAR)) {
 			boolean enable = !ViewConfiguration.get(this).hasPermanentMenuKey();
 			sp.edit().putBoolean(Constants.PREF_TOOLBAR, enable).apply();

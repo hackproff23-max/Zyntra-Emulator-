@@ -20,7 +20,7 @@
         android:scaleType="centerCrop"
         tools:src="@mipmap/ic_launcher" />
 
-    <TextView
+    <ru.playsoftware.j2meloader.util.OutlinedTextView
         android:id="@+id/list_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,6 +31,8 @@
         android:fontFamily="@font/app_bold"
         app:fontFamily="@font/app_bold"
         android:includeFontPadding="false"
+        android:paddingVertical="1dp"
+        app:outlineWidth="2dp"
         android:maxLines="1"
         android:textSize="11sp"
         tools:text="Example MIDlet Name" />

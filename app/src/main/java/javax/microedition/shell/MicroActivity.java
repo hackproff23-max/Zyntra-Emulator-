@@ -417,6 +417,7 @@ public class MicroActivity extends AppCompatActivity {
 			if (vk != null) {
 				boolean visible = vk.getLayoutEditMode() != VirtualKeyboard.LAYOUT_EOF;
 				menu.findItem(R.id.action_layout_edit_finish).setVisible(visible);
+				menu.findItem(R.id.action_analog).setChecked(vk.isAnalogMode());
 			}
 		} else {
 			menu.setGroupVisible(R.id.action_group_canvas, false);
@@ -535,7 +536,11 @@ public class MicroActivity extends AppCompatActivity {
 
 	private void handleVkOptions(int id) {
 		VirtualKeyboard vk = ContextHolder.getVk();
-		if (id == R.id.action_layout_edit_mode) {
+		if (id == R.id.action_analog) {
+			boolean on = !vk.isAnalogMode();
+			vk.setAnalogMode(on);
+			Toast.makeText(this, on ? R.string.vk_analog_on : R.string.vk_analog_off, Toast.LENGTH_SHORT).show();
+		} else if (id == R.id.action_layout_edit_mode) {
 			vk.setLayoutEditMode(VirtualKeyboard.LAYOUT_KEYS);
 			Toast.makeText(this, R.string.layout_edit_mode, Toast.LENGTH_SHORT).show();
 		} else if (id == R.id.action_layout_scale_mode) {

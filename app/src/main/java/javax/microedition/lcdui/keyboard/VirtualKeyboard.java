@@ -202,6 +202,18 @@ public class VirtualKeyboard implements Overlay, Runnable {
 	private float snapRadius;
 	private int layoutVariant;
 
+	// ---- botao analogico (joystick) no lugar das 8 setas ----
+	public static final String PREF_ANALOG = "vk_analog_mode";
+	private static final float ANALOG_DEAD_ZONE = 0.28f;
+	private static final float ANALOG_GRAB_SCALE = 1.25f;
+	private boolean analogMode;
+	private int analogPointer = -1;
+	private int analogDir = -1;
+	private float analogKnobDx;
+	private float analogKnobDy;
+	private final RectF analogRect = new RectF();
+	private final RectF analogKnobRect = new RectF();
+
 	public VirtualKeyboard(ProfileModel settings) {
 		this.settings = settings;
 		this.saveFile = new File(settings.dir + Config.MIDLET_KEY_LAYOUT_FILE);
@@ -243,6 +255,10 @@ public class VirtualKeyboard implements Overlay, Runnable {
 			applyLetters(loadLetters(androidx.preference.PreferenceManager
 					.getDefaultSharedPreferences(ContextHolder.getAppContext())));
 		}
+
+		analogMode = androidx.preference.PreferenceManager
+				.getDefaultSharedPreferences(ContextHolder.getAppContext())
+				.getBoolean(PREF_ANALOG, false);
 
 		layoutVariant = readLayoutType();
 
@@ -928,11 +944,155 @@ public class VirtualKeyboard implements Overlay, Runnable {
 	@Override
 	public void paint(CanvasWrapper g) {
 		if (visible && (layoutEditMode != LAYOUT_EOF || settings.vkAlpha > 0)) {
+			boolean analog = analogActive();
+			if (analog && analogAnyVisible()) {
+				paintAnalog(g);
+			}
 			for (VirtualKey key : keypad) {
+				if (analog && isDirectionKey(key.index)) {
+					continue;
+				}
 				if (key.visible) {
 					key.paint(g);
 				}
 			}
+		}
+	}
+
+	private static boolean isDirectionKey(int index) {
+		return index >= KEY_UP_LEFT && index <= KEY_DOWN_RIGHT;
+	}
+
+	private boolean analogActive() {
+		return analogMode && layoutEditMode == LAYOUT_EOF;
+	}
+
+	private boolean analogAnyVisible() {
+		for (int i = KEY_UP_LEFT; i <= KEY_DOWN_RIGHT; i++) {
+			if (keypad[i].visible) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Circulo do analogico: quadrado que envolve as 8 setas. */
+	private RectF getAnalogRect() {
+		RectF u = analogRect;
+		u.set(keypad[KEY_UP_LEFT].rect);
+		for (int i = KEY_UP; i <= KEY_DOWN_RIGHT; i++) {
+			u.union(keypad[i].rect);
+		}
+		float size = Math.min(u.width(), u.height());
+		float cx = u.centerX();
+		float cy = u.centerY();
+		u.set(cx - size / 2f, cy - size / 2f, cx + size / 2f, cy + size / 2f);
+		return u;
+	}
+
+	private void paintAnalog(CanvasWrapper g) {
+		RectF r = getAnalogRect();
+		boolean pressed = analogPointer != -1;
+		int a = pressed ? 0xFF : settings.vkAlpha;
+		g.setFillColor((a << 24) | settings.vkBgColor);
+		g.setDrawColor((a << 24) | settings.vkOutlineColor);
+		g.fillArc(r, 0, 360);
+		g.drawArc(r, 0, 360);
+		float radius = r.width() / 2f;
+		float kr = radius * 0.42f;
+		float kx = r.centerX() + analogKnobDx;
+		float ky = r.centerY() + analogKnobDy;
+		analogKnobRect.set(kx - kr, ky - kr, kx + kr, ky + kr);
+		g.setFillColor((a << 24) | (pressed ? settings.vkBgColorSelected : settings.vkFgColor));
+		g.fillArc(analogKnobRect, 0, 360);
+		g.drawArc(analogKnobRect, 0, 360);
+	}
+
+	private boolean analogContains(float x, float y) {
+		if (!analogActive() || !analogAnyVisible()) {
+			return false;
+		}
+		if (keypad[KEY_FIRE].contains(x, y)) {
+			return false; // o botao de acao no centro continua funcionando
+		}
+		RectF r = getAnalogRect();
+		float radius = r.width() / 2f * ANALOG_GRAB_SCALE;
+		float dx = x - r.centerX();
+		float dy = y - r.centerY();
+		return dx * dx + dy * dy <= radius * radius;
+	}
+
+	/** Atualiza o direcional e o desenho do botao conforme a posicao do dedo. */
+	private void analogUpdate(float x, float y) {
+		RectF r = getAnalogRect();
+		float radius = r.width() / 2f;
+		float dx = x - r.centerX();
+		float dy = y - r.centerY();
+		float dist = (float) Math.hypot(dx, dy);
+		float max = radius * 0.58f;
+		if (dist > max && dist > 0) {
+			analogKnobDx = dx / dist * max;
+			analogKnobDy = dy / dist * max;
+		} else {
+			analogKnobDx = dx;
+			analogKnobDy = dy;
+		}
+		int dir = -1;
+		if (dist >= radius * ANALOG_DEAD_ZONE) {
+			double angle = Math.toDegrees(Math.atan2(dy, dx));
+			int sector = ((int) Math.round(angle / 45.0) + 8) % 8;
+			dir = switch (sector) {
+				case 0 -> KEY_RIGHT;
+				case 1 -> KEY_DOWN_RIGHT;
+				case 2 -> KEY_DOWN;
+				case 3 -> KEY_DOWN_LEFT;
+				case 4 -> KEY_LEFT;
+				case 5 -> KEY_UP_LEFT;
+				case 6 -> KEY_UP;
+				default -> KEY_UP_RIGHT;
+			};
+		}
+		setAnalogDirection(dir);
+	}
+
+	private void setAnalogDirection(int newDir) {
+		if (newDir == analogDir) {
+			return;
+		}
+		if (analogDir != -1 && target != null) {
+			keypad[analogDir].onUp();
+		}
+		boolean wasIdle = analogDir == -1;
+		analogDir = newDir;
+		if (newDir != -1 && target != null) {
+			if (wasIdle) {
+				vibrate();
+			}
+			keypad[newDir].onDown();
+		}
+	}
+
+	private void analogRelease() {
+		analogPointer = -1;
+		setAnalogDirection(-1);
+		analogKnobDx = 0;
+		analogKnobDy = 0;
+	}
+
+	public boolean isAnalogMode() {
+		return analogMode;
+	}
+
+	public void setAnalogMode(boolean enabled) {
+		if (enabled == analogMode) {
+			return;
+		}
+		analogRelease();
+		analogMode = enabled;
+		androidx.preference.PreferenceManager.getDefaultSharedPreferences(ContextHolder.getAppContext())
+				.edit().putBoolean(PREF_ANALOG, enabled).apply();
+		if (overlayView != null) {
+			overlayView.postInvalidate();
 		}
 	}
 
@@ -943,7 +1103,17 @@ public class VirtualKeyboard implements Overlay, Runnable {
 				if (pointer > associatedKeys.length) {
 					return false;
 				}
+				if (analogPointer == -1 && analogContains(x, y)) {
+					analogPointer = pointer;
+					analogUpdate(x, y);
+					overlayView.postInvalidate();
+					return false;
+				}
+				boolean analogOn = analogActive();
 				for (VirtualKey key : keypad) {
+					if (analogOn && isDirectionKey(key.index)) {
+						continue;
+					}
 					if (key.contains(x, y)) {
 						vibrate();
 						associatedKeys[pointer] = key;
@@ -999,6 +1169,11 @@ public class VirtualKeyboard implements Overlay, Runnable {
 		switch (layoutEditMode) {
 			case LAYOUT_EOF -> {
 				if (pointer > associatedKeys.length) {
+					return false;
+				}
+				if (pointer == analogPointer) {
+					analogUpdate(x, y);
+					overlayView.postInvalidate();
 					return false;
 				}
 				VirtualKey aKey = associatedKeys[pointer];
@@ -1087,6 +1262,11 @@ public class VirtualKeyboard implements Overlay, Runnable {
 			if (pointer > associatedKeys.length) {
 				return false;
 			}
+			if (pointer == analogPointer) {
+				analogRelease();
+				overlayView.postInvalidate();
+				return false;
+			}
 			VirtualKey key = associatedKeys[pointer];
 			if (key != null) {
 				associatedKeys[pointer] = null;
@@ -1143,6 +1323,10 @@ public class VirtualKeyboard implements Overlay, Runnable {
 
 	@Override
 	public void cancel() {
+		analogPointer = -1;
+		analogDir = -1;
+		analogKnobDx = 0;
+		analogKnobDy = 0;
 		for (VirtualKey key : keypad) {
 			key.selected = false;
 			handler.removeCallbacks(key);
